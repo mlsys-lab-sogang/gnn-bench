@@ -7,15 +7,15 @@ The below links for each system refers to its repository.
 
 ### GNN models
 
-- [ ] GCN
 - [ ] GraphSAGE
-- [ ] GAT
+- [ ] FastGCN
+- [ ] Cluster-GCN
 
 ### Graph data
 
-- [ ] Ogbn-Product
-- [ ] Ogbn-Papers
 - [ ] Reddit
+- [ ] Ogbn-Products
+- [ ] Ogbn-Papers
 
 ### Single machine systems
 
