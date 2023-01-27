@@ -24,7 +24,7 @@ def generate_pdf(filename):
 
 def main(argv):
   if len(argv) != 2:
-    sys.exit(f"Expected one argument but got {len(argv)-1}.")
+    sys.exit("Expected one argument but got {}.".format(len(argv)-1))
   generate_pdf(argv[1])
 
 if __name__ == "__main__":

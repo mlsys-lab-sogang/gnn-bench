@@ -36,13 +36,13 @@ def generate_degree(d_name):
   print(f"degrees.max(): {degrees.max()}") # degrees.max(): 34962
   print(f"degrees.std(): {degrees.std()}") # degrees.std(): 191.80998979272695
 
-  pd.DataFrame({"index": range(graph.num_nodes), "degree": degrees}).to_csv(f"logs/degree_{d_name.replace("-", "_")}.csv", index=False)
+  pd.DataFrame({"index": range(graph.num_nodes), "degree": degrees}).to_csv("logs/degree_{}.csv".format(d_name.replace("-", "_")), index=False)
 
 def main(argv):
   if len(argv) != 2:
-    sys.exit(f"Expected one argument but got {len(argv)-1}.")
+    sys.exit("Expected one argument but got {}.".format(len(argv)-1))
   if argv[1] not in d_names:
-    sys.exit(f"Dataset should be one of:\n\t{'\t'.join(d_names)}")
+    sys.exit("Dataset should be one of:\n\t{}".format('\t'.join(d_names)))
   generate_degree(argv[1])
 
 if __name__ == "__main__":
