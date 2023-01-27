@@ -44,7 +44,7 @@ def generate_pdf():
   for degree in tqdm(degrees):
     pdfs[degree-degrees.min()] += 1.0
 
-  for idx in tqdm(range(degrees.min(), degrees.max()+1)):
+  for idx in tqdm(range(degrees.max()-degrees.min()+1)):
     norms[idx] = (norms[idx]-degrees.min())/(degrees.max()-degrees.min())
     pdfs[idx] /= degrees.size
 
@@ -86,7 +86,7 @@ def generate_pdf():
   for degree in tqdm(degrees):
     pdfs[degree-degrees.min()] += 1.0
 
-  for idx in tqdm(range(degrees.min(), degrees.max()+1)):
+  for idx in tqdm(range(degrees.max()-degrees.min()+1)):
     norms[idx] = (norms[idx]-degrees.min())/(degrees.max()-degrees.min())
     pdfs[idx] /= degrees.size
 
@@ -127,7 +127,7 @@ def generate_pdf():
   for degree in tqdm(degrees):
     pdfs[degree-degrees.min()] += 1.0
 
-  for idx in tqdm(range(degrees.min(), degrees.max()+1)):
+  for idx in tqdm(range(degrees.max()-degrees.min()+1)):
     norms[idx] = (norms[idx]-degrees.min())/(degrees.max()-degrees.min())
     pdfs[idx] /= degrees.size
 
