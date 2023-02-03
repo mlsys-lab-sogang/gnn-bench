@@ -81,7 +81,7 @@ def train_full(model, data, train_idx, optimizer):
 
     return loss.item()
 
-# TODO; train_mini 작성
+# TODO: train_mini 작성
 
 
 @torch.no_grad()
@@ -140,7 +140,7 @@ def main():
 
     device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu')
 
-    dataset = PygNodePropPredDataset(name='ogbn-products', transform=T.ToSparseTensor())
+    dataset = PygNodePropPredDataset(name='ogbn-products', root='../dataset/', transform=T.ToSparseTensor())
 
     
     # Because data is transformed to SparseTensor, we should use 'data.adj_t' (not 'data.edge_index').
