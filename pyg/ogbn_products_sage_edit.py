@@ -9,6 +9,7 @@ Official 2 : https://github.com/pyg-team/pytorch_geometric/blob/master/examples/
 """ 
 
 import argparse
+import copy
 
 import torch
 import torch.nn.functional as F
@@ -109,7 +110,7 @@ def test(model, data, split_idx, evaluator):
 
 def main():
     parser = argparse.ArgumentParser(description='OGBN-Products (GraphSAGE)')
-    parser.add_argument('--device', type=int, default=0)
+    parser.add_argument('--device', type=int, default=0)            # Specific device number. (0 to 3) 
     parser.add_argument('--log_steps', type=int, default=1)
     parser.add_argument('--num_layers', type=int, default=3)
     parser.add_argument('--hidden_channels', type=int, default=128) # 256 occurs CUDA OOM on full-batch 
@@ -118,8 +119,8 @@ def main():
     parser.add_argument('--epochs', type=int, default=300)
     parser.add_argument('--runs', type=int, default=1)
     parser.add_argument('--train_type', help="'full'-batch vs. 'mini'-batch (via neighborhood sampling).", choices=['full', 'mini'], required=True)
-    parser.add_argument('--fanout', help="# of fanouts. Should be len(fanout) == len(num_layers).", required=False) 
-    parser.add_argument('--batch_size', help="# of anchor node in each batch. # of batch will be 'len(num_nodes)/len(batch_size)'", required=False)
+    parser.add_argument('--fanout', type=list, nargs='+', help="# of fanouts. Should be len(fanout) == len(num_layers).", required=False) 
+    parser.add_argument('--batch_size', type=int, help="# of anchor node in each batch. # of batch will be 'len(num_nodes)/len(batch_size)'", required=False)
 
     args = parser.parse_args()
     print(args)
@@ -129,10 +130,8 @@ def main():
         if args.fanout is None or args.batch_size is None:
             raise Exception ("Should specify '--fanout' and '--batch_size'")
 
-        fanout_info = eval(args.fanout)
-
-        if len(fanout_info) != args.num_layers:
-            raise Exception (f"Fanout length should be same with 'num_layers' (len(fanout)({len(fanout_info)}) != num_layers({args.num_layers})).")
+        if len(args.fanout) != args.num_layers:
+            raise Exception (f"Fanout length should be same with 'num_layers' (len(fanout)({len(args.fanout)}) != num_layers({args.num_layers})).")
 
         print('mini-batch setting confirmed...')
 
@@ -143,7 +142,7 @@ def main():
     dataset = PygNodePropPredDataset(name='ogbn-products', root='../dataset/', transform=T.ToSparseTensor())
 
     
-    # Because data is transformed to SparseTensor, we should use 'data.adj_t' (not 'data.edge_index').
+    # Because data is transformed to SparseTensor, we should use 'data.adj_t' (not 'data.edge_index') in computation.
     # ogbn-products has adj matrix shaped by (2449029, 2449029), and # of non-zero values are 123718280.
     # non-zero value's ratio is only 0.00206%.
 
@@ -152,7 +151,7 @@ def main():
 
     split_idx = dataset.get_idx_split()
     train_idx = split_idx['train'].to(device) # will use only 'train' data in training, so send data's train idx info to GPU.
-
+    
     # TODO: Full-batch vs. Mini-batch handling
     # TODO: For mini-batch, we should specify "NeighborLoader" to do neighborhood sampling.
     if args.train_type == 'mini':
@@ -163,6 +162,30 @@ def main():
             num_layers = args.num_layers,
             dropout = args.dropout
         )
+
+        train_loader = NeighborLoader(
+            data = data, 
+            input_nodes = train_idx,        # will make mini-batches with data[train_idx].
+            num_neighbors = args.fanout,
+            shuffle = True,
+            batch_size = args.batch_size,   # nodes in data[train_idx] is anchor nodes to make computation graph in each mini-batch, and # of anchor node in each mini-batch is same as 'batch_size'.
+            num_workers = 6,
+            persistent_workers = True
+        )
+
+        # Refer : Inductive Representation Learning on Large Graphs [Hamilton et al., 2017] (GraphSAGE)
+        # This loader is for inference.
+        # At each layer, GraphSAGE takes "all 1-hop neighbors" to compute node representations.
+        # This leads to faster computation in contrast to immediately computing final representations of each batch.
+        subgraph_loader = NeighborLoader(
+            data = copy.copy(data),
+            input_nodes = None,             # will make mini-batches with all data
+            num_neighbors = [-1],           # will consider all 1-hop neighbors to compute node representation
+            shuffle = False,
+            batch_size = args.batch_size,
+            num_workers = 6,
+            persistent_workers = True
+        )
     
     else:
         model = SAGE_Full(
@@ -172,7 +195,11 @@ def main():
             num_layers = args.num_layers,
             dropout = args.dropout
         )
-
+    print(model)
+    print(train_loader)
+    print(subgraph_loader)
+    quit()
+    quit()
     # Move model & data to GPU
     model = model.to(device)
     data = data.to(device)
