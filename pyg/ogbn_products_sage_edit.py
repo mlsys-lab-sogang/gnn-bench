@@ -39,7 +39,9 @@ class SAGE_Full(torch.nn.Module):
         for conv in self.convs:
             conv.reset_parameters()
 
-    # TODO: ToSparseTensor로 transform없이 edge_index로 할때 차이? 단순히 정보량?    
+    # TODO: ToSparseTensor로 transform없이 edge_index로 할때 차이? 단순히 정보량?
+    # https://github.com/pyg-team/pytorch_geometric/discussions/4901 
+    # adj is transposed into adj_t, it accelerates message passing.
     def forward(self, x, adj_t):
         for conv in self.convs[:-1]:
             x = conv(x, adj_t) # message passing
@@ -68,8 +70,33 @@ class SAGE_Mini(torch.nn.Module):
             conv.reset_parameters()
     
     # TODO: forward, inference 작성
+    # (0, Data(num_nodes=409009, x=[409009, 100], y=[409009, 1], adj_t=[409009, 409009, nnz=713999], input_id=[1024], batch_size=1024))
+    def forward(self, x, adj_t):
+        for conv in self.convs[:-1]:
+            x = conv(x, adj_t) # message passing
+            x = F.relu(x)
+            x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.convs[-1](x, adj_t)
+        return torch.log_softmax(x, dim=-1)
+
+    @torch.no_grad()
+    def inference(self, x_all, subgraph_loader):
+        # At each layer, GraphSAGE takes "all 1-hop neighbors" to compute node representations.
+        # This leads to faster computation in contrast to immediately computing final representations of each batch.
+        for conv in self.convs[:-1]:
+            xs = []
+            for batch in subgraph_loader:
+                x = x_all[batch.n_id.to(x_all.device)].to(device)
+                x = conv(x, batch.adj_t.to(device))
+                x = F.relu(x)
+                xs.append(x[:batch.batch_size])
+            x_all = torch.cat(xs, dim=0)
+        return x_all
 
  
+
+# FIXME: train, test 함수는 1개로 -> 그 안에서 args.train_type 에 따라 if-else 나눠서 train-test 분리 : 받는 인자에 argument도 받도록.
+# train, test가 받아야할 인자 : x, adj_t, train_type, loader
 
 def train_full(model, data, train_idx, optimizer):
     model.train()
@@ -119,7 +146,7 @@ def main():
     parser.add_argument('--epochs', type=int, default=300)
     parser.add_argument('--runs', type=int, default=1)
     parser.add_argument('--train_type', help="'full'-batch vs. 'mini'-batch (via neighborhood sampling).", choices=['full', 'mini'], required=True)
-    parser.add_argument('--fanout', type=list, nargs='+', help="# of fanouts. Should be len(fanout) == len(num_layers).", required=False) 
+    parser.add_argument('--fanout', type=int, nargs='+', help="# of fanouts. Should be len(fanout) == len(num_layers).", required=False) 
     parser.add_argument('--batch_size', type=int, help="# of anchor node in each batch. # of batch will be 'len(num_nodes)/len(batch_size)'", required=False)
 
     args = parser.parse_args()
@@ -139,6 +166,7 @@ def main():
 
     device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu')
 
+    # https://pytorch-geometric.readthedocs.io/en/latest/notes/sparse_tensor.html (Difference between using 'edge_index' and 'adj_t'.)
     dataset = PygNodePropPredDataset(name='ogbn-products', root='../dataset/', transform=T.ToSparseTensor())
 
     
@@ -150,10 +178,10 @@ def main():
     data = dataset[0]
 
     split_idx = dataset.get_idx_split()
-    train_idx = split_idx['train'].to(device) # will use only 'train' data in training, so send data's train idx info to GPU.
+
+    # FIXME: .to(device) 한 후에 NeighborLoader 호출시 CUDA initialization error. data와 idx가 다른 
+    train_idx = split_idx['train']#.to(device) # will use only 'train' data in training, so send data's train idx info to GPU.
     
-    # TODO: Full-batch vs. Mini-batch handling
-    # TODO: For mini-batch, we should specify "NeighborLoader" to do neighborhood sampling.
     if args.train_type == 'mini':
         model = SAGE_Mini(
             in_channels = data.num_features,
@@ -186,6 +214,9 @@ def main():
             num_workers = 6,
             persistent_workers = True
         )
+
+        # add global node index information for mini-batch inference.
+        subgraph_loader.data.n_id = torch.arange(data.num_nodes)
     
     else:
         model = SAGE_Full(
@@ -196,10 +227,13 @@ def main():
             dropout = args.dropout
         )
     print(model)
-    print(train_loader)
+    # print(train_loader)
+    # print(next(enumerate(train_loader))) # (0, Data(num_nodes=409009, x=[409009, 100], y=[409009, 1], adj_t=[409009, 409009, nnz=713999], input_id=[1024], batch_size=1024))
+    # print(type(next(enumerate(train_loader))))
     print(subgraph_loader)
+    print(next(enumerate(subgraph_loader)))
     quit()
-    quit()
+
     # Move model & data to GPU
     model = model.to(device)
     data = data.to(device)
