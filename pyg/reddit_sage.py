@@ -1,15 +1,18 @@
 """
-Edit by HappySky12
+Edit by HappySky12 (2nd edit)
+    - add some time-checking codes
+    - save time results as .csv file to './time_results/' directory.
 
 Official : https://github.com/pyg-team/pytorch_geometric/blob/master/examples/reddit.py (PyG example)
 
-TODO: 
-    1. Mini-batch train (follow by official)
-    2. Full-batch train
 """
 
 import argparse
 import copy
+import os 
+
+import numpy as np
+import pandas as pd
 
 import torch
 import torch.nn.functional as F
@@ -51,15 +54,22 @@ device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'c
 # Data(x=[232965, 602], y=[232965], train_mask=[232965], val_mask=[232965], test_mask=[232965], adj_t=[232965, 232965, nnz=114615892])
 dataset = Reddit(root='../dataset/Reddit/', transform=T.ToSparseTensor())
 
-## FIXME: full, mini 차이위해서 잠시 주석. (train_type 따라서 올리는거 다르게.)
-## Send node features and labels to GPU for faster access during sampling.
-# data = dataset[0].to(device, 'x', 'y')
-
-
 # If we are doing mini-batch manner, we should define NeighborLoader to sample neighbors.
 if args.train_type == 'mini':
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+
+    # Send node features and labels to GPU for faster access during sampling.
+    start.record()
     data = dataset[0].to(device, 'x', 'y')
+    end.record()
+
+    torch.cuda.synchronize()
+
     print(data)
+    
+    # elapsed_time() returns milliseconds.
+    print(f'Total GPU loading time : {start.elapsed_time(end) / 1000.0:.4f} s') # Total GPU loading time : 16.42 s
 
     train_loader = NeighborLoader(
         data = data,
@@ -91,10 +101,19 @@ if args.train_type == 'mini':
     # Add global node index information for mini-batch inference
     subgraph_loader.data.num_nodes = data.num_nodes
     subgraph_loader.data.n_id = torch.arange(data.num_nodes)
-else:
-    data = dataset[0].to(device)
-    print(data)
 
+else:
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+    
+    start.record()
+    data = dataset[0].to(device)
+    end.record()
+
+    torch.cuda.synchronize()
+
+    print(data)
+    print(f'Total GPU loading time : {start.elapsed_time(end) / 1000.0:.4f} s') # Total GPU loading time : 16.6524 s
 
 class SAGE_Full(torch.nn.Module):
     """Full-batch GraphSAGE"""
@@ -153,8 +172,8 @@ class SAGE_Mini(torch.nn.Module):
     
     @torch.no_grad()
     def inference(self, x_all, subgraph_loader):
-        progress_bar = tqdm(total=len(subgraph_loader.dataset) * len(self.conv_layers))
-        progress_bar.set_description('Evaluating...')
+        # progress_bar = tqdm(total=len(subgraph_loader.dataset) * len(self.conv_layers))
+        # progress_bar.set_description('Evaluating...')
 
         """
         for conv in self.conv_layers[:-1]:
@@ -184,9 +203,9 @@ class SAGE_Mini(torch.nn.Module):
                 if i < len(self.conv_layers) - 1:
                     x = F.relu(x)
                 xs.append(x[:batch.batch_size].cpu())               # will move it to main memory for inference.
-                progress_bar.update(batch.batch_size)
+                # progress_bar.update(batch.batch_size)
             x_all = torch.cat(xs, dim=0)
-        progress_bar.close()
+        # progress_bar.close()
         return x_all
 
 if args.train_type == 'mini':
@@ -210,12 +229,12 @@ else :
 model = model.to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
-def train_full(epoch):
+def train_full():
     """Full-batch train"""
     model.train()
 
-    progress_bar = tqdm(total=int(data.num_nodes))
-    progress_bar.set_description(f'Epoch {epoch:02d}')
+    # progress_bar = tqdm(total=int(data.num_nodes))
+    # progress_bar.set_description(f'Epoch {epoch:02d}')
 
     optimizer.zero_grad()
 
@@ -227,7 +246,7 @@ def train_full(epoch):
     loss.backward()
     optimizer.step()
 
-    progress_bar.close()
+    # progress_bar.close()
 
     return loss.item()
 
@@ -244,13 +263,14 @@ def test_full():
 
     return accuracy_list
 
-def train_mini(epoch):
+def train_mini():
     """Mini-batch train"""
     model.train()
 
-    progress_bar = tqdm(total=int(len(train_loader.dataset)))
-    progress_bar.set_description(f'Epoch {epoch:02d}')
+    # progress_bar = tqdm(total=int(len(train_loader.dataset)))
+    # progress_bar.set_description(f'Epoch {epoch:02d}')
 
+    # FIXME: sampling time measure?
     total_loss = total_correct = total_examples = 0
     for batch in train_loader:
         optimizer.zero_grad()
@@ -266,8 +286,8 @@ def train_mini(epoch):
         total_loss += float(loss) * batch.batch_size
         total_correct += int((y_hat.argmax(dim=-1) == y).sum())
         total_examples += batch.batch_size
-        progress_bar.update(batch.batch_size)
-    progress_bar.close()
+        # progress_bar.update(batch.batch_size)
+    # progress_bar.close()
 
     return total_loss / total_examples, total_correct / total_examples
 
@@ -285,23 +305,73 @@ def test_mini():
     
     return accuracy_list
 
+time_list_train, time_list_infer = np.array([]), np.array([])
 if args.train_type == 'mini':
     model.reset_parameters()
 
     for epoch in range(args.epochs):
-        loss, acc = train_mini(epoch)
-        print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train Acc: {acc:.4f}')
+        gpu_start_time = torch.cuda.Event(enable_timing=True)
+        gpu_end_time = torch.cuda.Event(enable_timing=True)
 
+        gpu_start_time.record()
+        loss, acc = train_mini()
+        gpu_end_time.record()
+
+        torch.cuda.synchronize()
+        elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
+        time_list_train = np.append(time_list_train, elapsed_time)
+
+        print(f'Epoch {epoch:03d}, Loss: {loss:.4f}, Approx. Train Acc: {acc:.4f}, Training Time(GPU): {elapsed_time:.8f}s')
+
+        gpu_start_time.record()
         train_acc, val_acc, test_acc = test_mini()
-        print(f'Epoch: {epoch:02d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}')
+        gpu_end_time.record()
+
+        torch.cuda.synchronize()
+        elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
+        time_list_infer = np.append(time_list_infer, elapsed_time)
+
+        print(f'Epoch {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time(GPU): {elapsed_time:.8f} s')
 
 else:
     model.reset_parameters()
 
     for epoch in range(args.epochs):
-        loss = train_full(epoch)
+        gpu_start_time = torch.cuda.Event(enable_timing=True)
+        gpu_end_time = torch.cuda.Event(enable_timing=True)
 
-        print(f'Epoch {epoch:02d}, Loss: {loss:.4f}')
+        gpu_start_time.record()
+        loss = train_full()
+        gpu_end_time.record()        
 
+        torch.cuda.synchronize()
+
+        elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
+        time_list_train = np.append(time_list_train, elapsed_time)
+
+        print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Training Time(GPU): {elapsed_time:.4f} s')
+
+        gpu_start_time.record()
         train_acc, val_acc, test_acc = test_full()
-        print(f'Epoch: {epoch:02d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}')
+        gpu_end_time.record()
+
+        torch.cuda.synchronize()
+
+        elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
+        time_list_infer = np.append(time_list_infer, elapsed_time)
+
+        print(f'Epoch {epoch:02d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time(GPU): {elapsed_time:.4f} s')
+
+df = pd.DataFrame({'train_time' : time_list_train, 'infer_time' : time_list_infer})
+
+dir_name = './time_result/'
+
+if args.train_type == 'mini':
+    file_name = f'reddit_sage_singleGPU_{args.train_type}_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'
+else:
+    file_name = f'reddit_sage_singleGPU_{args.train_type}_layer{args.num_layers}_hidden{args.hidden_channels}.csv'
+
+if not os.path.isdir(dir_name):
+    os.mkdir(dir_name)
+
+df.to_csv(dir_name + file_name)
