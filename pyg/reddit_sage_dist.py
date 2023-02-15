@@ -6,6 +6,8 @@ Official : https://github.com/pyg-team/pytorch_geometric/blob/master/examples/mu
 This code is for (distributed) data parallel training for multiple GPUs.
 
 Since we are not using such graph partitioning scheme, only using neighbor sampling, this script will run in only mini-batch manner. 
+
+(0215) FIX : This script can't run 'adj_t' (SparseTensor) as input. Maybe it's some PyTorch's issue, so fixed 'adj_t' to 'edge_index' as official code.
 """
 
 import argparse
@@ -28,6 +30,8 @@ from torch_geometric.datasets import Reddit
 from torch_geometric.nn import SAGEConv
 from torch_geometric.loader import NeighborLoader
 
+
+### FIXME: (0215) Need to make this part into function.
 parser = argparse.ArgumentParser(description='Reddit (GraphSAGE_Distributed)')
 
 parser.add_argument('--num_layers', type=int, default=3)
@@ -47,6 +51,7 @@ if len(args.fanout) != args.num_layers:
     raise Exception (f"Fanout length should be same with 'num_layers' (len(fanout)({len(args.fanout)}) != num_layers({args.num_layers})).")
 
 print(args)
+###
 
 class SAGE_Dist(torch.nn.Module):
     """Mini-batch GraphSAGE"""
@@ -66,14 +71,18 @@ class SAGE_Dist(torch.nn.Module):
         for conv in self.conv_layers:
             conv.reset_parameters()
 
-    # Since we are using SparseTensor, not 'edge_index', we will use adj_t for message passing.
-    # SparseTensor accelerates message passing. (https://github.com/pyg-team/pytorch_geometric/discussions/4901)
-    def forward(self, x, adj_t):
+    #### FIXME: (0215) adj_t -> edge_index 
+    ## Since we are using SparseTensor, not 'edge_index', we will use adj_t for message passing.
+    ## SparseTensor accelerates message passing. (https://github.com/pyg-team/pytorch_geometric/discussions/4901)
+    # def forward(self, x, adj_t):
+    def forward(self, x, edge_index):
         for conv in self.conv_layers[:-1]: # message passing from 1st layer to hidden layers
-            x = conv(x, adj_t)
+            # x = conv(x, adj_t)
+            x = conv(x, edge_index)
             x = F.relu(x)
             x = F.dropout(x, p=self.dropout, training=self.training)
-        x = self.conv_layers[-1](x, adj_t) # message passing from last hidden layer to last layer
+        # x = self.conv_layers[-1](x, adj_t) # message passing from last hidden layer to last layer
+        x = self.conv_layers[-1](x, edge_index)
         return x
     
     @torch.no_grad()
@@ -84,12 +93,14 @@ class SAGE_Dist(torch.nn.Module):
             xs = []
             for batch in subgraph_loader:
                 x = x_all[batch.n_id.to(x_all.device)].to(device)   # access to original index, since index in batch is differ from original.
-                x = conv(x, batch.adj_t.to(device))                 # message_passing for all nodes (in mini-batch).
+                # x = conv(x, batch.adj_t.to(device))                 # message_passing for all nodes (in mini-batch).
+                x = conv(x, batch.edge_index.to(device))
                 if i < len(self.conv_layers) - 1:
                     x = F.relu(x)
                 xs.append(x[:batch.batch_size].cpu())               # will move it to main memory for inference.
             x_all = torch.cat(xs, dim=0)
         return x_all
+    ####
 
 # This function will copied to each GPU device.
 # Process will made as # of GPUs, and each process will take each GPU.
@@ -104,16 +115,16 @@ def run(rank, world_size, dataset):
 
     data = dataset[0]
 
-    ### FIXME: Data loading time check add.
-    start = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
+    # ### FIXME: Data loading time check add.
+    # start = torch.cuda.Event(enable_timing=True)
+    # end = torch.cuda.Event(enable_timing=True)
 
-    start.record()
-    # Send node features and labels to device for faster access during sampling.
+    # start.record()
+    ## Send node features and labels to device for faster access during sampling.
     data = data.to(rank, 'x', 'y')
-    end.record()
+    # end.record()
 
-    print(f'Total data loading time in {world_size} GPU : {start.elapsed_time(end) / 1000.0:.4f}s')  # This will apprear as many as # of GPUs? (need to confirm)
+    # print(f'Total data loading time in {world_size} GPU : {start.elapsed_time(end) / 1000.0:.4f}s')  # This will apprear as many as # of GPUs? (need to confirm)
     ###
 
     # Split training indices into chunks as 'world_size'. 
@@ -125,6 +136,7 @@ def run(rank, world_size, dataset):
         input_nodes = train_idx,            # will make mini-batches in each GPU, with partitioned train nodes.
         num_neighbors = args.fanout,
         shuffle = True,
+        drop_last = True,
         batch_size = args.batch_size,       # nodes in data[train_idx] is anchor nodes to make computation graph in each mini-batch, and # of anchor node in each mini-batch is same as 'batch_size'.
         num_workers = 6,
         persistent_workers = True
@@ -178,11 +190,14 @@ def run(rank, world_size, dataset):
         start_time.record()         # Time checking start
 
         model.train()
+
+        ### FIXME: adj_t -> edge_index
         for batch in train_loader:
             optimizer.zero_grad()
 
             y = batch.y[:batch.batch_size]
-            y_hat = model(batch.x, batch.adj_t.to(rank))[:batch.batch_size]
+            # y_hat = model(batch.x, batch.adj_t.to(rank))[:batch.batch_size]
+            y_hat = model(batch.x, batch.edge_index.to(rank))[:batch.batch_size]
 
             loss = F.cross_entropy(y_hat, y)
 
@@ -199,7 +214,8 @@ def run(rank, world_size, dataset):
         # Must synchronize all GPUs.
         dist.barrier()
 
-        # We evaluate on a single process for now.
+        ## We evaluate on a single process for now.
+        ## FIXME: We can aggregate each GPU's output, and calculate aggregated loss. (Official code is just doing inference in only 1 GPU.)
         if rank == 0:
             # print(f'Epoch {epoch:03d}, Loss: {loss:.4f}')
 
@@ -212,7 +228,7 @@ def run(rank, world_size, dataset):
             val_acc = int(result[data.val_mask].sum()) / int(data.val_mask.sum())
             test_acc = int(result[data.test_mask].sum()) / int(data.test_mask.sum())
 
-            print(f'Epoch {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}')
+            print(f'Epoch: {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}')
         
         # Must synchronize all GPUs.
         dist.barrier()
@@ -220,7 +236,9 @@ def run(rank, world_size, dataset):
     dist.destroy_process_group()
 
 if __name__ == '__main__':
-    dataset = Reddit(root='../dataset/Reddit/', transform=T.ToSparseTensor())
+    ### FIXME: (0215) Since DDP can't use SparseTensor, we can use 'edge_index' as originally.
+    # dataset = Reddit(root='../dataset/reddit/', transform=T.ToSparseTensor())
+    dataset = Reddit(root='../dataset/reddit/')
 
     world_size = torch.cuda.device_count()
 
