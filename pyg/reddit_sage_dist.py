@@ -78,9 +78,6 @@ class SAGE_Dist(torch.nn.Module):
     
     @torch.no_grad()
     def inference(self, x_all, device, subgraph_loader):
-        # progress_bar = tqdm(total=len(subgraph_loader.dataset) * len(self.conv_layers))
-        # progress_bar.set_description('Evaluating...')
-
         # At each layer, GraphSAGE takes **all 1-hop neighbors** to compute node representations.
         # This leads to faster computation in contrast to immediately computing final representations of each batch.
         for i, conv in enumerate(self.conv_layers):
@@ -91,11 +88,12 @@ class SAGE_Dist(torch.nn.Module):
                 if i < len(self.conv_layers) - 1:
                     x = F.relu(x)
                 xs.append(x[:batch.batch_size].cpu())               # will move it to main memory for inference.
-                # progress_bar.update(batch.batch_size)
             x_all = torch.cat(xs, dim=0)
-        # progress_bar.close()
         return x_all
 
+# This function will copied to each GPU device.
+# Process will made as # of GPUs, and each process will take each GPU.
+# And each process will execute this function by using each GPU, in parallel manner.
 def run(rank, world_size, dataset):
     """Run GraphSAGE in Distributed Data Parallel (DDP) Manner."""
     os.environ['MASTER_ADDR'] = 'localhost'
@@ -106,8 +104,17 @@ def run(rank, world_size, dataset):
 
     data = dataset[0]
 
+    ### FIXME: Data loading time check add.
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+
+    start.record()
     # Send node features and labels to device for faster access during sampling.
     data = data.to(rank, 'x', 'y')
+    end.record()
+
+    print(f'Total data loading time in {world_size} GPU : {start.elapsed_time(end) / 1000.0:.4f}s')  # This will apprear as many as # of GPUs? (need to confirm)
+    ###
 
     # Split training indices into chunks as 'world_size'. 
     train_idx = data.train_mask.nonzero(as_tuple=False).view(-1)
@@ -129,7 +136,7 @@ def run(rank, world_size, dataset):
     # This leads to faster computation in contrast to immediately computing final representations of each batch.
     # Refer : Inductive Representation Learning on Large Graphs [Hamilton et al., 2017] (GraphSAGE)
     if rank == 0:
-        """Define neighbor loader for inference in 1st GPU"""
+        """Define neighbor loader for inference in 1st (main) process"""
         subgraph_loader = NeighborLoader(
             data = copy.copy(data),
             input_nodes = None,             # will make mini-batches with all nodes.
@@ -163,6 +170,13 @@ def run(rank, world_size, dataset):
 
     # FIXME: Official Repo is not using train/test function, maybe we can functionize it?
     for epoch in range(args.epochs):
+        
+        ### FIXME: Running time check add
+        start_time = torch.cuda.Event(enable_timing=True)
+        end_time = torch.cuda.Event(enable_timing=True)
+
+        start_time.record()         # Time checking start
+
         model.train()
         for batch in train_loader:
             optimizer.zero_grad()
@@ -175,12 +189,19 @@ def run(rank, world_size, dataset):
             loss.backward()
             optimizer.step()
         
+        end_time.record()           # Time checking end
+        torch.cuda.synchronize()
+        elapsed_time = start_time.elapsed_time(end_time) / 1000.0
+
+        print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss:.4f}, Training Time: {elapsed_time:.8f}s')
+        ###
+
         # Must synchronize all GPUs.
         dist.barrier()
 
-        # We evaluate on a single GPU for now.
+        # We evaluate on a single process for now.
         if rank == 0:
-            print(f'Epoch {epoch:03d}, Loss: {loss:.4f}')
+            # print(f'Epoch {epoch:03d}, Loss: {loss:.4f}')
 
             model.eval()
             with torch.no_grad():
