@@ -52,7 +52,7 @@ if args.train_type == 'mini':
 device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu')
 
 # Data(x=[232965, 602], y=[232965], train_mask=[232965], val_mask=[232965], test_mask=[232965], adj_t=[232965, 232965, nnz=114615892])
-dataset = Reddit(root='../dataset/Reddit/', transform=T.ToSparseTensor())
+dataset = Reddit(root='../dataset/reddit/', transform=T.ToSparseTensor())
 
 # If we are doing mini-batch manner, we should define NeighborLoader to sample neighbors.
 if args.train_type == 'mini':
