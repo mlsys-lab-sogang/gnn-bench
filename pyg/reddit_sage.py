@@ -306,6 +306,8 @@ def test_mini():
     return accuracy_list
 
 time_list_train, time_list_infer = np.array([]), np.array([])
+loss_list_train = np.array([])
+acc_list_infer_train, acc_list_infer_val, acc_list_infer_test = np.array([]), np.array([]), np.array([])
 if args.train_type == 'mini':
     model.reset_parameters()
 
@@ -320,6 +322,7 @@ if args.train_type == 'mini':
         torch.cuda.synchronize()
         elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
         time_list_train = np.append(time_list_train, elapsed_time)
+        loss_list_train = np.append(loss_list_train, loss)
 
         print(f'Epoch {epoch:03d}, Loss: {loss:.4f}, Approx. Train Acc: {acc:.4f}, Training Time(GPU): {elapsed_time:.8f}s')
 
@@ -330,6 +333,9 @@ if args.train_type == 'mini':
         torch.cuda.synchronize()
         elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
         time_list_infer = np.append(time_list_infer, elapsed_time)
+        acc_list_infer_train = np.append(acc_list_infer_train, train_acc)
+        acc_list_infer_val = np.append(acc_list_infer_val, val_acc)
+        acc_list_infer_test = np.append(acc_list_infer_test, test_acc)
 
         print(f'Epoch {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time(GPU): {elapsed_time:.8f} s')
 
@@ -348,6 +354,7 @@ else:
 
         elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
         time_list_train = np.append(time_list_train, elapsed_time)
+        loss_list_train = np.append(loss_list_train, loss)
 
         print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Training Time(GPU): {elapsed_time:.4f} s')
 
@@ -359,10 +366,20 @@ else:
 
         elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
         time_list_infer = np.append(time_list_infer, elapsed_time)
+        acc_list_infer_train = np.append(acc_list_infer_train, train_acc)
+        acc_list_infer_val = np.append(acc_list_infer_val, val_acc)
+        acc_list_infer_test = np.append(acc_list_infer_test, test_acc)
 
         print(f'Epoch {epoch:02d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time(GPU): {elapsed_time:.4f} s')
 
-df = pd.DataFrame({'train_time' : time_list_train, 'infer_time' : time_list_infer})
+df = pd.DataFrame({
+        'loss' : loss_list_train,
+        'train_time' : time_list_train,
+        'acc_train' : acc_list_infer_train,
+        'acc_val' : acc_list_infer_val,
+        'acc_test' : acc_list_infer_test, 
+        'infer_time' : time_list_infer
+    })
 
 dir_name = './time_result/'
 
