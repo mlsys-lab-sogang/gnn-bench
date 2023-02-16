@@ -30,28 +30,28 @@ from torch_geometric.datasets import Reddit
 from torch_geometric.nn import SAGEConv
 from torch_geometric.loader import NeighborLoader
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Reddit (GraphSAGE_Distributed)')
 
-### FIXME: (0215) Need to make this part into function.
-parser = argparse.ArgumentParser(description='Reddit (GraphSAGE_Distributed)')
+    parser.add_argument('--num_layers', type=int, default=3)
+    parser.add_argument('--hidden_channels', type=int, default=128) 
+    parser.add_argument('--dropout', type=float, default=0.3)
+    parser.add_argument('--lr', type=float, default=0.01)
+    parser.add_argument('--epochs', type=int, default=300)
+    parser.add_argument('--fanout', type=int, nargs='+', help="# of fanouts. Should be len(fanout) == len(num_layers).", required=True)
+    parser.add_argument('--batch_size', type=int, help="# of anchor node in each batch. # of batch will be 'len(num_nodes)/len(batch_size)'", required=True)
 
-parser.add_argument('--num_layers', type=int, default=3)
-parser.add_argument('--hidden_channels', type=int, default=128) 
-parser.add_argument('--dropout', type=float, default=0.3)
-parser.add_argument('--lr', type=float, default=0.01)
-parser.add_argument('--epochs', type=int, default=300)
-parser.add_argument('--fanout', type=int, nargs='+', help="# of fanouts. Should be len(fanout) == len(num_layers).", required=True)
-parser.add_argument('--batch_size', type=int, help="# of anchor node in each batch. # of batch will be 'len(num_nodes)/len(batch_size)'", required=True)
+    args = parser.parse_args()
 
-args = parser.parse_args()
+    if args.fanout is None or args.batch_size is None:
+        raise Exception ("Should specify '--fanout' and '--batch_size'")
 
-if args.fanout is None or args.batch_size is None:
-    raise Exception ("Should specify '--fanout' and '--batch_size'")
+    if len(args.fanout) != args.num_layers:
+        raise Exception (f"Fanout length should be same with 'num_layers' (len(fanout)({len(args.fanout)}) != num_layers({args.num_layers})).")
 
-if len(args.fanout) != args.num_layers:
-    raise Exception (f"Fanout length should be same with 'num_layers' (len(fanout)({len(args.fanout)}) != num_layers({args.num_layers})).")
+    print(args)
 
-print(args)
-###
+    return args
 
 class SAGE_Dist(torch.nn.Module):
     """Mini-batch GraphSAGE"""
@@ -105,7 +105,7 @@ class SAGE_Dist(torch.nn.Module):
 # This function will copied to each GPU device.
 # Process will made as # of GPUs, and each process will take each GPU.
 # And each process will execute this function by using each GPU, in parallel manner.
-def run(rank, world_size, dataset):
+def run(rank, world_size, dataset, args):
     """Run GraphSAGE in Distributed Data Parallel (DDP) Manner."""
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12355'
@@ -236,6 +236,8 @@ def run(rank, world_size, dataset):
     dist.destroy_process_group()
 
 if __name__ == '__main__':
+    args = parse_args()
+
     ### FIXME: (0215) Since DDP can't use SparseTensor, we can use 'edge_index' as originally.
     # dataset = Reddit(root='../dataset/reddit/', transform=T.ToSparseTensor())
     dataset = Reddit(root='../dataset/reddit/')
@@ -244,4 +246,4 @@ if __name__ == '__main__':
 
     print(f'Using {world_size} GPUs...')
 
-    mp.spawn(run, args=(world_size, dataset), nprocs=world_size, join=True) # join : Perform a blocking join on all processes.
+    mp.spawn(run, args=(world_size, dataset, args), nprocs=world_size, join=True) # join : Perform a blocking join on all processes.
