@@ -180,6 +180,31 @@ def run(rank, world_size, dataset, args):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
+    ##### FIXME: (0216) Dictionary for saving each GPU's information (loss, train_time, inference_time, etc...)
+    ## ## Maybe something like this?
+    ## ## elements in each list means 'loss', 'training_time', 'inference_time'.
+    ## ## Then how can we save it to proper dataframe for analyzing? or maybe using other format?
+    ## {'Epoch_000': 
+    ##             {
+    ##                 'GPU_0': [0.32919108867645264, 5.3712529296875, 14.57099707],
+    ##                 'GPU_1': [0.32919108867645264, 5.3712529296875, 14.57099707],
+    ##                 'GPU_2': [0.32919108867645264, 5.3712529296875, 14.57099707],
+    ##                 'GPU_3': [0.32919108867645264, 5.3712529296875, 14.57099707]
+    ##             },
+    ## 'Epoch_001': 
+    ##             {
+    ##                 'GPU_0': [0.32919108867645264, 5.3712529296875, 14.57099707],
+    ##                 'GPU_1': [0.32919108867645264, 5.3712529296875, 14.57099707],
+    ##                 'GPU_2': [0.32919108867645264, 5.3712529296875, 14.57099707],
+    ##                 'GPU_3': [0.32919108867645264, 5.3712529296875, 14.57099707]
+    ##             }
+    ## }
+    ## ## or just take each GPU's training time? (like below)
+    #####
+    
+    # device_dict = {}
+    device_dict = {f'GPU_{rank}' : []}
+
     # FIXME: Official Repo is not using train/test function, maybe we can functionize it?
     for epoch in range(args.epochs):
         
@@ -210,14 +235,23 @@ def run(rank, world_size, dataset, args):
 
         print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss:.4f}, Training Time: {elapsed_time:.8f}s')
         ###
+        
+        # device_dict[f'Epoch_{epoch:03d}'] = {f'GPU_{rank}' : [loss.item(), elapsed_time]}
+        device_dict[f'GPU_{rank}'] += [elapsed_time] # This will append each training time into dict's value.
 
         # Must synchronize all GPUs.
         dist.barrier()
+
+        # print(device_dict) # {'Epoch_000': {'GPU_0': [0.32919108867645264, 5.3712529296875]}}
+        # print(device_dict)
+        # if epoch == 3:
+        #     quit()
 
         ## We evaluate on a single process for now.
         ## FIXME: We can aggregate each GPU's output, and calculate aggregated loss. (Official code is just doing inference in only 1 GPU.)
         if rank == 0:
             # print(f'Epoch {epoch:03d}, Loss: {loss:.4f}')
+            start_time.record()
 
             model.eval()
             with torch.no_grad():
@@ -228,11 +262,17 @@ def run(rank, world_size, dataset, args):
             val_acc = int(result[data.val_mask].sum()) / int(data.val_mask.sum())
             test_acc = int(result[data.test_mask].sum()) / int(data.test_mask.sum())
 
-            print(f'Epoch: {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}')
+            end_time.record()
+
+            torch.cuda.synchronize()
+
+            elapsed_time = start_time.elapsed_time(end_time) / 1000.0
+
+            print(f'Epoch: {epoch:03d}, GPU: {rank}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time: {elapsed_time:.8f}s')
         
         # Must synchronize all GPUs.
         dist.barrier()
-    
+
     dist.destroy_process_group()
 
 if __name__ == '__main__':
