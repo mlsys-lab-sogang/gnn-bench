@@ -9,6 +9,13 @@ Official 2 : https://github.com/pyg-team/pytorch_geometric/blob/master/examples/
 
 import argparse
 import copy
+import os
+
+# Since OGB stucks in last import, moved it to here.
+from ogb.nodeproppred import PygNodePropPredDataset, Evaluator
+
+import numpy as np
+import pandas as pd
 
 import torch
 import torch.nn.functional as F
@@ -16,8 +23,6 @@ import torch.nn.functional as F
 import torch_geometric.transforms as T
 from torch_geometric.nn import SAGEConv
 from torch_geometric.loader import NeighborLoader
-
-from ogb.nodeproppred import PygNodePropPredDataset, Evaluator
 
 from logger import Logger
 
@@ -80,7 +85,7 @@ if args.train_type == 'mini':
 
     torch.cuda.synchronize()
 
-    print(f'Total GPU loading time : {start.elapsed_time(end) / 1000:.4f}s')
+    print(f'Total GPU loading time : {start.elapsed_time(end) / 1000.0:.4f}s')
 
     train_loader = NeighborLoader(
         data = data, 
@@ -123,7 +128,7 @@ else:
 
     torch.cuda.synchronize()
 
-    print(f'Total GPU loading time : {start.elapsed_time(end) / 1000:.4f}s')
+    print(f'Total GPU loading time : {start.elapsed_time(end) / 1000.0:.4f}s')
 
 
 class SAGE_Full(torch.nn.Module):
@@ -304,14 +309,39 @@ def test_mini():
     return train_acc, val_acc, test_acc
 
 
-# TODO: mini-batch run 작성
+time_list_train, time_list_infer = np.array([]), np.array([])
+loss_list_train = np.array([])
+acc_list_train, acc_list_val, acc_list_test = np.array([]), np.array([]), np.array([])
 if args.train_type == 'mini':
     for run in range(args.runs):
         model.reset_parameters()
 
         for epoch in range(args.epochs):
+            time_start = torch.cuda.Event(enable_timing=True)
+            time_end = torch.cuda.Event(enable_timing=True)
+
+            time_start.record()
             loss, _ = train_mini()
+            time_end.record()
+
+            torch.cuda.synchronize()
+            elapsed_time_train = time_start.elapsed_time(time_end) / 1000.0
+
+            time_list_train = np.append(time_list_train, elapsed_time_train)
+            loss_list_train = np.append(loss_list_train, loss)
+
+            time_start.record()
             result = test_mini()
+            time_end.record()
+
+            torch.cuda.synchronize()
+            elapsed_time_infer = time_start.elapsed_time(time_end) / 1000.0
+
+            time_list_infer = np.append(time_list_infer, elapsed_time_infer)
+            acc_list_train = np.append(acc_list_train, result[0])
+            acc_list_val = np.append(acc_list_val, result[1])
+            acc_list_test = np.append(acc_list_test, result[2])
+
             logger.add_result(run, result)
 
             if epoch % args.log_steps == 0:
@@ -321,8 +351,10 @@ if args.train_type == 'mini':
                     f'Epoch: {epoch:03d}, '
                     f'Loss: {loss:.4f}, '
                     f'Train: {100 * train_acc:.2f}%, '
-                    f'Valid: {100 * valid_acc:.2f}% '
-                    f'Test: {100 * test_acc:.2f}%')
+                    f'Valid: {100 * valid_acc:.2f}%, '
+                    f'Test: {100 * test_acc:.2f}%, '
+                    f'Train Time: {elapsed_time_train:.8f}s,'
+                    f'Infer Time: {elapsed_time_infer:.8f}s')
         print('====Mini-batch GraphSAGE result====')            
         logger.print_statistics(run)
     logger.print_statistics()
@@ -332,8 +364,31 @@ else:
         model.reset_parameters()
 
         for epoch in range(args.epochs):
+            time_start = torch.cuda.Event(enable_timing=True)
+            time_end = torch.cuda.Event(enable_timing=True)
+
+            # time_start.record()
             loss = train_full()
+            time_end.record()
+
+            torch.cuda.synchronize()
+            elapsed_time_train = time_start.elapsed_time(time_end) / 1000.0
+
+            time_list_train = np.append(time_list_train, elapsed_time_train)
+            loss_list_train = np.append(loss_list_train, loss)
+
+            time_start.record()
             result = test_full()
+            time_end.record()
+
+            torch.cuda.synchronize()
+            elapsed_time_infer = time_start.elapsed_time(time_end) / 1000.0
+
+            time_list_infer = np.append(time_list_infer, elapsed_time_infer)
+            acc_list_train = np.append(acc_list_train, result[0])
+            acc_list_val = np.append(acc_list_val, result[1])
+            acc_list_test = np.append(acc_list_test, result[2])
+
             logger.add_result(run, result)
 
             if epoch % args.log_steps == 0:
@@ -344,7 +399,31 @@ else:
                     f'Loss: {loss:.4f}, '
                     f'Train: {100 * train_acc:.2f}%, '
                     f'Valid: {100 * valid_acc:.2f}% '
-                    f'Test: {100 * test_acc:.2f}%')
+                    f'Test: {100 * test_acc:.2f}%,'
+                    f'Train Time: {elapsed_time_train:.8f}s,'
+                    f'Infer Time: {elapsed_time_infer:.8f}s')
         print('====Full-batch GraphSAGE result====')            
         logger.print_statistics(run)
     logger.print_statistics()
+
+df = pd.DataFrame({
+    'loss' : loss_list_train,
+    'train_time' : time_list_train,
+    'acc_train' : acc_list_train,
+    'acc_val' : acc_list_val,
+    'acc_test' : acc_list_test,
+    'infer_time' : time_list_infer
+})
+
+dir_name = './time_result/'
+
+if args.train_type == 'mini':
+    file_name = f'ogbn_products_sage_singleGPU_{args.train_type}_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'
+
+else:
+    file_name = f'ogbn_products_sage_singleGPU_{args.train_type}_layer{args.num_layers}_hidden{args.hidden_channels}.csv'
+
+if not os.path.isdir(dir_name):
+    os.mkdir(dir_name)
+
+df.to_csv(dir_name + file_name)
