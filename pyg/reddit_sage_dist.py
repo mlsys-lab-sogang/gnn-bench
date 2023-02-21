@@ -202,8 +202,9 @@ def run(rank, world_size, dataset, args):
     ## ## or just take each GPU's training time? (like below)
     #####
     
-    # device_dict = {}
-    device_dict = {f'GPU_{rank}' : []}
+    ## FIXME: For time checking, we will save each GPU's train time to .csv file. (csv file will made as # of GPUs.)
+    # device_dict = {f'GPU_{rank}' : []}
+    time_list_train = np.array([])
 
     # FIXME: Official Repo is not using train/test function, maybe we can functionize it?
     for epoch in range(args.epochs):
@@ -232,20 +233,19 @@ def run(rank, world_size, dataset, args):
         end_time.record()           # Time checking end
         torch.cuda.synchronize()
         elapsed_time = start_time.elapsed_time(end_time) / 1000.0
+        time_list_train = np.append(time_list_train, elapsed_time)
 
         print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss:.4f}, Training Time: {elapsed_time:.8f}s')
         ###
         
+        ## FIXME: Maybe handle file saving later?
         # device_dict[f'Epoch_{epoch:03d}'] = {f'GPU_{rank}' : [loss.item(), elapsed_time]}
-        device_dict[f'GPU_{rank}'] += [elapsed_time] # This will append each training time into dict's value.
+        # device_dict[f'GPU_{rank}'] += [elapsed_time] # This will append each training time into dict's value.
 
         # Must synchronize all GPUs.
         dist.barrier()
 
         # print(device_dict) # {'Epoch_000': {'GPU_0': [0.32919108867645264, 5.3712529296875]}}
-        # print(device_dict)
-        # if epoch == 3:
-        #     quit()
 
         ## We evaluate on a single process for now.
         ## FIXME: We can aggregate each GPU's output, and calculate aggregated loss. (Official code is just doing inference in only 1 GPU.)
@@ -272,6 +272,20 @@ def run(rank, world_size, dataset, args):
         
         # Must synchronize all GPUs.
         dist.barrier()
+
+    ## FIXME: Saving each GPU's train time to .csv file.
+    df = pd.DataFrame({
+        'train_time' : time_list_train
+    })
+
+    dir_name = './time_result/dist/'
+
+    if rank == 0:
+        if not os.path.isdir(dir_name):
+            os.mkdir(dir_name)
+    
+    file_name = f'reddit_sage_multiGPU_rank{rank}_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'
+    df.to_csv(dir_name + file_name)
 
     dist.destroy_process_group()
 
