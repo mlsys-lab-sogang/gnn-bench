@@ -367,7 +367,7 @@ else:
             time_start = torch.cuda.Event(enable_timing=True)
             time_end = torch.cuda.Event(enable_timing=True)
 
-            # time_start.record()
+            time_start.record()
             loss = train_full()
             time_end.record()
 
