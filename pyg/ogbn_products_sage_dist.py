@@ -8,6 +8,7 @@ This code is for (distributed) data parallel training for multiple GPUs.
 Since we are not using such graph partitioning scheme, only using neighbor sampling, this script will run in only mini-batch manner. 
 
 (0215) FIX : This script can't run 'adj_t' (SparseTensor) as input. Maybe it's some PyTorch's issue, so fixed 'adj_t' to 'edge_index' as official code.
+(0222) FIX : Time check per batch (not epoch)
 """
 import argparse
 import copy
@@ -177,25 +178,25 @@ def run(rank, world_size, dataset, args):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
-    time_list_train = np.array([])
-
     if rank == 0:
         print('Enter training...') # just for checking.
 
     for run in range(args.runs):
         model.module.reset_parameters()
 
+        ## FIXME: per-batch runtime check & per-epoch acc check -> save to .csv file each.
+        time_history = pd.DataFrame(columns=['step', 'elapsed_time'])
+        acc_history = pd.DataFrame(columns=['epoch', 'train_acc', 'valid_acc', 'test_acc'])
+
         for epoch in range(args.epochs):
-            ## FIXME: Running time check add
             start_time = torch.cuda.Event(enable_timing=True)
             end_time = torch.cuda.Event(enable_timing=True)
-
-            start_time.record()
 
             model.train()
             
             total_loss = total_examples = 0
             for batch in train_loader:
+                start_time.record()
                 optimizer.zero_grad()
 
                 y = batch.y[:batch.batch_size]
@@ -209,17 +210,18 @@ def run(rank, world_size, dataset, args):
 
                 total_loss += float(loss) * batch.batch_size
                 total_examples += batch.batch_size
+
+                end_time.record()
+                torch.cuda.synchronize()
+
+                elapsed_time = start_time.elapsed_time(end_time) / 1000.0
+
+                time_history.loc[len(time_history)] = [len(time_history), elapsed_time]         # record per-batch runtime
             
             loss_after_batch = total_loss / total_examples
             
-            end_time.record()
-            torch.cuda.synchronize()
-
-            elapsed_time = start_time.elapsed_time(end_time) / 1000.0
-            time_list_train = np.append(time_list_train, elapsed_time)
-
             # print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss:.4f}')
-            print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss_after_batch:.4f}, Training Time : {elapsed_time:.8f}s')
+            print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss_after_batch:.4f}')
             
             # Must synchronize all GPUs.
             dist.barrier()
@@ -246,6 +248,8 @@ def run(rank, world_size, dataset, args):
                         'y_true': y_true[split_idx['test']],
                         'y_pred': y_pred[split_idx['test']],
                     })['acc']
+
+                    acc_history.loc[len(acc_history)] = [epoch, train_acc, val_acc, test_acc]   # record per-epoch acc
                 
                 if epoch % args.log_steps == 0:
                     print(f'Run: {run + 1:02d}, '
@@ -259,18 +263,17 @@ def run(rank, world_size, dataset, args):
             # Must synchronize all GPUs.
             dist.barrier()
         
-        df = pd.DataFrame({
-            'train_time' : time_list_train
-        })
-
-        dir_name = './time_result/dist/'
+        dir_name = './time_result/dist_fix/'
 
         if rank == 0:
             if not os.path.isdir(dir_name):
                 os.mkdir(dir_name)
+            
+            acc_history.to_csv(dir_name + f'ogbn_products_sage_multiGPU_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv', index=False)
         
-        file_name = f'ogbn_products_sage_multiGPU_rank{rank}_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'
-        df.to_csv(dir_name + file_name)
+        file_name = f'ogbn_products_sage_multiGPU_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{rank}.csv'
+ 
+        time_history.to_csv(dir_name + file_name, index=False)
 
         dist.destroy_process_group()
         
