@@ -177,6 +177,8 @@ def run(rank, world_size, dataset, args):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
+    time_list_train = np.array([])
+
     if rank == 0:
         print('Enter training...') # just for checking.
 
@@ -184,6 +186,12 @@ def run(rank, world_size, dataset, args):
         model.module.reset_parameters()
 
         for epoch in range(args.epochs):
+            ## FIXME: Running time check add
+            start_time = torch.cuda.Event(enable_timing=True)
+            end_time = torch.cuda.Event(enable_timing=True)
+
+            start_time.record()
+
             model.train()
             
             total_loss = total_examples = 0
@@ -204,8 +212,14 @@ def run(rank, world_size, dataset, args):
             
             loss_after_batch = total_loss / total_examples
             
+            end_time.record()
+            torch.cuda.synchronize()
+
+            elapsed_time = start_time.elapsed_time(end_time) / 1000.0
+            time_list_train = np.append(time_list_train, elapsed_time)
+
             # print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss:.4f}')
-            print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss_after_batch:.4f}')
+            print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss_after_batch:.4f}, Training Time : {elapsed_time:.8f}s')
             
             # Must synchronize all GPUs.
             dist.barrier()
@@ -245,6 +259,19 @@ def run(rank, world_size, dataset, args):
             # Must synchronize all GPUs.
             dist.barrier()
         
+        df = pd.DataFrame({
+            'train_time' : time_list_train
+        })
+
+        dir_name = './time_result/dist/'
+
+        if rank == 0:
+            if not os.path.isdir(dir_name):
+                os.mkdir(dir_name)
+        
+        file_name = f'ogbn_products_sage_multiGPU_rank{rank}_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'
+        df.to_csv(dir_name + file_name)
+
         dist.destroy_process_group()
         
 
