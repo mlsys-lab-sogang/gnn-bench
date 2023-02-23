@@ -185,7 +185,7 @@ def run(rank, world_size, dataset, args):
         model.module.reset_parameters()
 
         ## FIXME: per-batch runtime check & per-epoch acc check -> save to .csv file each.
-        time_history = pd.DataFrame(columns=['step', 'elapsed_time'])
+        batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_allocated'])
         acc_history = pd.DataFrame(columns=['epoch', 'train_acc', 'valid_acc', 'test_acc'])
 
         for epoch in range(args.epochs):
@@ -199,8 +199,12 @@ def run(rank, world_size, dataset, args):
                 start_time.record()
                 optimizer.zero_grad()
 
+                before_alloc = torch.cuda.memory_allocated(rank)
+
                 y = batch.y[:batch.batch_size]
                 y_hat = model(batch.x, batch.edge_index.to(rank))[:batch.batch_size]
+
+                after_alloc = torch.cuda.memory_allocated(rank)
 
                 # loss = F.nll_loss(y_hat, y)         # Each process has its own loss, we need to aggregate it for calculating overall loss.
                 loss = F.cross_entropy(y_hat, y)      # Why does nll_loss returns - values?
@@ -215,8 +219,9 @@ def run(rank, world_size, dataset, args):
                 torch.cuda.synchronize()
 
                 elapsed_time = start_time.elapsed_time(end_time) / 1000.0
+                mem_allocated = (after_alloc - before_alloc)/1024.0/1024.0
 
-                time_history.loc[len(time_history)] = [len(time_history), elapsed_time]         # record per-batch runtime
+                batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_allocated]         # record per-batch runtime
             
             loss_after_batch = total_loss / total_examples
             
@@ -273,7 +278,7 @@ def run(rank, world_size, dataset, args):
         
         file_name = f'ogbn_products_sage_multiGPU_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{rank}.csv'
  
-        time_history.to_csv(dir_name + file_name, index=False)
+        batch_history.to_csv(dir_name + file_name, index=False)
 
         dist.destroy_process_group()
         
