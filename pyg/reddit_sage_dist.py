@@ -180,62 +180,45 @@ def run(rank, world_size, dataset, args):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
-    ##### FIXME: (0216) Dictionary for saving each GPU's information (loss, train_time, inference_time, etc...)
-    ## ## Maybe something like this?
-    ## ## elements in each list means 'loss', 'training_time', 'inference_time'.
-    ## ## Then how can we save it to proper dataframe for analyzing? or maybe using other format?
-    ## {'Epoch_000': 
-    ##             {
-    ##                 'GPU_0': [0.32919108867645264, 5.3712529296875, 14.57099707],
-    ##                 'GPU_1': [0.32919108867645264, 5.3712529296875, 14.57099707],
-    ##                 'GPU_2': [0.32919108867645264, 5.3712529296875, 14.57099707],
-    ##                 'GPU_3': [0.32919108867645264, 5.3712529296875, 14.57099707]
-    ##             },
-    ## 'Epoch_001': 
-    ##             {
-    ##                 'GPU_0': [0.32919108867645264, 5.3712529296875, 14.57099707],
-    ##                 'GPU_1': [0.32919108867645264, 5.3712529296875, 14.57099707],
-    ##                 'GPU_2': [0.32919108867645264, 5.3712529296875, 14.57099707],
-    ##                 'GPU_3': [0.32919108867645264, 5.3712529296875, 14.57099707]
-    ##             }
-    ## }
-    ## ## or just take each GPU's training time? (like below)
-    #####
-    
     ## FIXME: For time checking, we will save each GPU's train time to .csv file. (csv file will made as # of GPUs.)
-    # device_dict = {f'GPU_{rank}' : []}
-    time_list_train = np.array([])
+    batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_allocated'])
+    acc_history = pd.DataFrame(columns=['epoch', 'train_acc', 'valid_acc', 'test_acc'])
 
-    # FIXME: Official Repo is not using train/test function, maybe we can functionize it?
     for epoch in range(args.epochs):
         
         ### FIXME: Running time check add
         start_time = torch.cuda.Event(enable_timing=True)
         end_time = torch.cuda.Event(enable_timing=True)
 
-        start_time.record()         # Time checking start
-
         model.train()
 
         ### FIXME: adj_t -> edge_index
         for batch in train_loader:
+            start_time.record()
             optimizer.zero_grad()
+
+            before_alloc = torch.cuda.memory_allocated(rank)
 
             y = batch.y[:batch.batch_size]
             # y_hat = model(batch.x, batch.adj_t.to(rank))[:batch.batch_size]
             y_hat = model(batch.x, batch.edge_index.to(rank))[:batch.batch_size]
 
+            after_alloc = torch.cuda.memory_allocated(rank)
+
             loss = F.cross_entropy(y_hat, y)
 
             loss.backward()
             optimizer.step()
-        
-        end_time.record()           # Time checking end
-        torch.cuda.synchronize()
-        elapsed_time = start_time.elapsed_time(end_time) / 1000.0
-        time_list_train = np.append(time_list_train, elapsed_time)
 
-        print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss:.4f}, Training Time: {elapsed_time:.8f}s')
+            end_time.record()
+            torch.cuda.synchronize()
+
+            elapsed_time = start_time.elapsed_time(end_time) / 1000.0
+            mem_allocaated = (after_alloc - before_alloc)/1024.0/1024.0
+
+            batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_allocaated]
+        
+        print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss:.4f}')
         ###
         
         ## FIXME: Maybe handle file saving later?
@@ -268,24 +251,22 @@ def run(rank, world_size, dataset, args):
 
             elapsed_time = start_time.elapsed_time(end_time) / 1000.0
 
+            acc_history.loc[len(acc_history)] = [epoch, train_acc, val_acc, test_acc]
+
             print(f'Epoch: {epoch:03d}, GPU: {rank}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time: {elapsed_time:.8f}s')
         
         # Must synchronize all GPUs.
         dist.barrier()
-
-    ## FIXME: Saving each GPU's train time to .csv file.
-    df = pd.DataFrame({
-        'train_time' : time_list_train
-    })
 
     dir_name = './time_result/dist/'
 
     if rank == 0:
         if not os.path.isdir(dir_name):
             os.mkdir(dir_name)
+        acc_history.to_csv(dir_name + f'reddit_sage_multiGPU_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv', index=False)
     
-    file_name = f'reddit_sage_multiGPU_rank{rank}_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'
-    df.to_csv(dir_name + file_name)
+    file_name = f'reddit_sage_multiGPU_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{rank}.csv'
+    batch_history.to_csv(dir_name + file_name, index=False)
 
     dist.destroy_process_group()
 
