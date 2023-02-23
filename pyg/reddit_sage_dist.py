@@ -258,7 +258,7 @@ def run(rank, world_size, dataset, args):
         # Must synchronize all GPUs.
         dist.barrier()
 
-    dir_name = './time_result/dist/'
+    dir_name = './time_result/dist_fix/'
 
     if rank == 0:
         if not os.path.isdir(dir_name):
