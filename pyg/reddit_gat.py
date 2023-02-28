@@ -84,9 +84,12 @@ class GAT(torch.nn.Module):
         self.conv_layers = torch.nn.ModuleList()
 
         self.conv_layers.append(GATConv(in_channels, hidden_channels, heads=heads, dropout=dropout))
-        for _ in range(num_layers - 1):
+        for _ in range(num_layers - 2):
             self.conv_layers.append(GATConv(hidden_channels * heads, hidden_channels, heads=heads, dropout=dropout))
-        self.conv_layers.append(GATConv(hidden_channels * heads, out_channels, heads=1, concat=False, dropout=dropout))     # At last layer, do not concat feature matrix, average it.  
+        self.conv_layers.append(GATConv(hidden_channels * heads, out_channels, heads=1, concat=False, dropout=dropout))     # At last layer, do not concat feature matrix, average it. 
+
+        self.num_layers = num_layers
+        self.dropout = dropout 
 
     def reset_parameters(self):
         for conv in self.conv_layers:
@@ -94,10 +97,9 @@ class GAT(torch.nn.Module):
 
     def forward(self, x, adj_t):
         for conv in self.conv_layers[:-1]:
-            x = F.dropout(x, p=0.6, training=self.training)
             x = conv(x, adj_t)
             x = F.elu(x)
-            x = F.dropout(x, p=0.6, training=self.training)
+            x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.conv_layers[-1](x, adj_t)
 
         return x
