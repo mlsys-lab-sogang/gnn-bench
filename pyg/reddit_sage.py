@@ -175,24 +175,6 @@ class SAGE_Mini(torch.nn.Module):
         # progress_bar = tqdm(total=len(subgraph_loader.dataset) * len(self.conv_layers))
         # progress_bar.set_description('Evaluating...')
 
-        """
-        for conv in self.conv_layers[:-1]:
-            xs = []
-            for batch in subgraph_loader:
-                x = x_all[batch.n_id.to(x_all.device)].to(device)   
-                # print(batch.n_id.shape)
-                # print(x_all.shape)
-                # print(x.shape)
-                # quit()
-                x = conv(x, batch.adj_t.to(device))                 
-                x = F.relu(x)
-                xs.append(x[:batch.batch_size].cpu())               
-                progress_bar.update(batch.batch_size)
-            x_all = torch.cat(xs, dim=0)
-        progress_bar.close()
-        return x_all
-        """
-
         # At each layer, GraphSAGE takes **all 1-hop neighbors** to compute node representations.
         # This leads to faster computation in contrast to immediately computing final representations of each batch.
         for i, conv in enumerate(self.conv_layers):
@@ -263,33 +245,50 @@ def test_full():
 
     return accuracy_list
 
-def train_mini():
+def train_mini(epoch, dataframe:pd.DataFrame):
     """Mini-batch train"""
     model.train()
 
     # progress_bar = tqdm(total=int(len(train_loader.dataset)))
     # progress_bar.set_description(f'Epoch {epoch:02d}')
 
-    # FIXME: sampling time measure?
+    start_time = torch.cuda.Event(enable_timing=True)
+    end_time = torch.cuda.Event(enable_timing=True)
+
     total_loss = total_correct = total_examples = 0
     for batch in train_loader:
+        num_nodes = batch.num_nodes - args.batch_size       # 'batch_size' is the same as '# of seed nodes' in each batch. so if we want to count **sampled nodes**, we can substract it.
+        
+        start_time.record()
         optimizer.zero_grad()
         
+        before_alloc = torch.cuda.memory_allocated(device)
+
         y = batch.y[:batch.batch_size]
         y_hat = model(batch.x, batch.adj_t.to(device))[:batch.batch_size]
+
+        after_alloc = torch.cuda.memory_allocated(device)
 
         loss = F.cross_entropy(y_hat, y)
 
         loss.backward()
         optimizer.step()
 
+        end_time.record()
+        torch.cuda.synchronize()
+
+        elapsed_time = start_time.elapsed_time(end_time)/1000.0
+        mem_allocated = (after_alloc - before_alloc)/1024.0/1024.0
+
         total_loss += float(loss) * batch.batch_size
         total_correct += int((y_hat.argmax(dim=-1) == y).sum())
         total_examples += batch.batch_size
+
+        dataframe.loc[len(dataframe)] = [len(dataframe), elapsed_time, mem_allocated, num_nodes]
         # progress_bar.update(batch.batch_size)
     # progress_bar.close()
 
-    return total_loss / total_examples, total_correct / total_examples
+    return total_loss / total_examples, total_correct / total_examples, dataframe
 
 @torch.no_grad()
 def test_mini():
@@ -305,10 +304,10 @@ def test_mini():
     
     return accuracy_list
 
-time_list_train, time_list_infer = np.array([]), np.array([])
-loss_list_train = np.array([])
-acc_list_infer_train, acc_list_infer_val, acc_list_infer_test = np.array([]), np.array([]), np.array([])
 if args.train_type == 'mini':
+    batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_allocated', 'num_nodes'])
+    acc_history = pd.DataFrame(columns=['epoch', 'elapsed_time_train', 'elapsed_time_infer', 'train_acc', 'valid_acc', 'test_acc'])
+
     model.reset_parameters()
 
     for epoch in range(args.epochs):
@@ -316,30 +315,28 @@ if args.train_type == 'mini':
         gpu_end_time = torch.cuda.Event(enable_timing=True)
 
         gpu_start_time.record()
-        loss, acc = train_mini()
+        loss, acc, batch_history = train_mini(epoch, batch_history)
         gpu_end_time.record()
 
         torch.cuda.synchronize()
-        elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
-        time_list_train = np.append(time_list_train, elapsed_time)
-        loss_list_train = np.append(loss_list_train, loss)
+        train_elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
 
-        print(f'Epoch {epoch:03d}, Loss: {loss:.4f}, Approx. Train Acc: {acc:.4f}, Training Time(GPU): {elapsed_time:.8f}s')
+        print(f'Epoch {epoch:03d}, Loss: {loss:.4f}, Approx. Train Acc: {acc:.4f}, Training Time(GPU): {train_elapsed_time:.8f}s')
 
         gpu_start_time.record()
         train_acc, val_acc, test_acc = test_mini()
         gpu_end_time.record()
 
         torch.cuda.synchronize()
-        elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
-        time_list_infer = np.append(time_list_infer, elapsed_time)
-        acc_list_infer_train = np.append(acc_list_infer_train, train_acc)
-        acc_list_infer_val = np.append(acc_list_infer_val, val_acc)
-        acc_list_infer_test = np.append(acc_list_infer_test, test_acc)
+        infer_elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
 
-        print(f'Epoch {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time(GPU): {elapsed_time:.8f} s')
+        print(f'Epoch {epoch:03d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time(GPU): {infer_elapsed_time:.8f} s')
+
+        acc_history.loc[len(acc_history)] = [len(acc_history), train_elapsed_time, infer_elapsed_time, train_acc, val_acc, test_acc]
 
 else:
+    acc_history = pd.DataFrame(columns=['epoch', 'elapsed_time_train', 'elapsed_time_infer', 'train_acc', 'valid_acc', 'test_acc'])
+
     model.reset_parameters()
 
     for epoch in range(args.epochs):
@@ -352,11 +349,9 @@ else:
 
         torch.cuda.synchronize()
 
-        elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
-        time_list_train = np.append(time_list_train, elapsed_time)
-        loss_list_train = np.append(loss_list_train, loss)
+        train_elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
 
-        print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Training Time(GPU): {elapsed_time:.4f} s')
+        print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Training Time(GPU): {train_elapsed_time:.4f} s')
 
         gpu_start_time.record()
         train_acc, val_acc, test_acc = test_full()
@@ -364,31 +359,20 @@ else:
 
         torch.cuda.synchronize()
 
-        elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
-        time_list_infer = np.append(time_list_infer, elapsed_time)
-        acc_list_infer_train = np.append(acc_list_infer_train, train_acc)
-        acc_list_infer_val = np.append(acc_list_infer_val, val_acc)
-        acc_list_infer_test = np.append(acc_list_infer_test, test_acc)
+        infer_elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
 
-        print(f'Epoch {epoch:02d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time(GPU): {elapsed_time:.4f} s')
+        print(f'Epoch {epoch:02d}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time(GPU): {infer_elapsed_time:.4f} s')
 
-df = pd.DataFrame({
-        'loss' : loss_list_train,
-        'train_time' : time_list_train,
-        'acc_train' : acc_list_infer_train,
-        'acc_val' : acc_list_infer_val,
-        'acc_test' : acc_list_infer_test, 
-        'infer_time' : time_list_infer
-    })
+        acc_history.loc[len(acc_history)] = [len(acc_history), train_elapsed_time, infer_elapsed_time, train_acc, val_acc, test_acc]
 
-dir_name = './time_result/'
-
-if args.train_type == 'mini':
-    file_name = f'reddit_sage_singleGPU_{args.train_type}_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'
-else:
-    file_name = f'reddit_sage_singleGPU_{args.train_type}_layer{args.num_layers}_hidden{args.hidden_channels}.csv'
+dir_name = '../logs/single_gpu/'
 
 if not os.path.isdir(dir_name):
     os.mkdir(dir_name)
 
-df.to_csv(dir_name + file_name)
+if args.train_type == 'mini':
+    batch_history.to_csv(dir_name + f'reddit_sage_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_{args.train_type}.csv', index=False)
+    acc_history.to_csv(dir_name + f'reddit_sage_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_{args.train_type}.csv', index=False)
+
+else:
+    acc_history.to_csv(dir_name + f'reddit_sage_acc_layer{args.num_layers}_hidden{args.hidden_channels}_{args.train_type}.csv', index=False)
