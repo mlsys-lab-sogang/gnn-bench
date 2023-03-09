@@ -7,19 +7,19 @@ The below links for each system refers to its repository.
 
 ### GNN models
 
-- [ ] GraphSAGE
+- [x] GraphSAGE (with neighborhood sampling)
 - [ ] FastGCN
 - [ ] Cluster-GCN
 
 ### Graph data
 
-- [ ] Reddit
-- [ ] Ogbn-Products
+- [x] Reddit
+- [x] Ogbn-Products
 - [ ] Ogbn-Papers
 
 ### Single machine systems
 
-- [ ] [PyTorch Geometric (PyG)](https://github.com/pyg-team/pytorch_geometric)
+- [x] [PyTorch Geometric (PyG)](https://github.com/pyg-team/pytorch_geometric)
 - [ ] [DGL](https://github.com/dmlc/dgl)
 
 ### Distributed systems
