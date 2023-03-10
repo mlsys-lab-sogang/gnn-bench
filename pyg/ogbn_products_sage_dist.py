@@ -17,7 +17,6 @@ import os
 # Since OGB stucks in last import, moved it to here.
 from ogb.nodeproppred import PygNodePropPredDataset, Evaluator
 
-import numpy as np
 import pandas as pd
 
 import torch
@@ -136,7 +135,7 @@ def run(rank, world_size, dataset, args):
         shuffle = True,
         drop_last = True,
         batch_size = args.batch_size,           # nodes in data[train_idx] is anchor nodes to make computation graph in each mini-batch, and # of anchor nodes in each mini-batch is same as 'batch_size'.
-        num_workers = 12,
+        num_workers = 6,
         persistent_workers = True
     )
 
@@ -153,7 +152,7 @@ def run(rank, world_size, dataset, args):
             num_neighbors = [-1],           # will consider all 1-hop neighbors to compute node representations.
             shuffle = False,
             batch_size = args.batch_size,
-            num_workers = 12,
+            num_workers = 6,
             persistent_workers = True
         )
 
@@ -268,7 +267,8 @@ def run(rank, world_size, dataset, args):
             # Must synchronize all GPUs.
             dist.barrier()
         
-        dir_name = './time_result/dist_fix/'
+        # dir_name = './time_result/dist_fix/'
+        dir_name = '../logs/multi_gpu/'
 
         if rank == 0:
             if not os.path.isdir(dir_name):
