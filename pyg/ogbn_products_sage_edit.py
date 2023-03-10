@@ -93,7 +93,7 @@ if args.train_type == 'mini':
         num_neighbors = args.fanout,
         shuffle = True,
         batch_size = args.batch_size,   # nodes in data[train_idx] is anchor nodes to make computation graph in each mini-batch, and # of anchor node in each mini-batch is same as 'batch_size'.
-        num_workers = 12,
+        num_workers = 6,
         persistent_workers = True
     )
 
@@ -107,7 +107,7 @@ if args.train_type == 'mini':
         num_neighbors = [-1],           # will consider all 1-hop neighbors to compute node representation
         shuffle = False,
         batch_size = args.batch_size,
-        num_workers = 12,
+        num_workers = 6,
         persistent_workers = True
     )
 
@@ -262,27 +262,46 @@ def test_full():
 
     return train_acc, valid_acc, test_acc
 
-def train_mini():
+def train_mini(dataframe:pd.DataFrame):
     """Mini-batch train"""
     model.train()
 
+    start_time = torch.cuda.Event(enable_timing=True)
+    end_time = torch.cuda.Event(enable_timing=True)
+
     total_loss = total_correct = total_examples = 0
     for batch in train_loader:
+        num_nodes = batch.num_nodes - args.batch_size
+
+        start_time.record()
+
         optimizer.zero_grad()
+
+        before_alloc = torch.cuda.memory_allocated(device)
 
         y = batch.y[:batch.batch_size]
         y_hat = model(batch.x, batch.adj_t.to(device))[:batch.batch_size]
+
+        after_alloc = torch.cuda.memory_allocated(device)
 
         loss = F.nll_loss(y_hat, y)
 
         loss.backward()
         optimizer.step()
 
+        end_time.record()
+        torch.cuda.synchronize()
+
+        elapsed_time = start_time.elapsed_time(end_time)/1000.0
+        mem_allocated = (after_alloc - before_alloc)/1024.0/1024.0
+
         total_loss += float(loss) * batch.batch_size
         total_correct += int((y_hat.argmax(dim=-1) == y).sum())
         total_examples += batch.batch_size
 
-    return total_loss / total_examples, total_correct / total_examples
+        dataframe.loc[len(dataframe)] = [len(dataframe), elapsed_time, mem_allocated, num_nodes]
+
+    return total_loss / total_examples, total_correct / total_examples, dataframe
 
 @torch.no_grad()
 def test_mini():
@@ -309,10 +328,10 @@ def test_mini():
     return train_acc, val_acc, test_acc
 
 
-time_list_train, time_list_infer = np.array([]), np.array([])
-loss_list_train = np.array([])
-acc_list_train, acc_list_val, acc_list_test = np.array([]), np.array([]), np.array([])
 if args.train_type == 'mini':
+    batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_allocated', 'num_nodes'])
+    acc_history = pd.DataFrame(columns=['epoch', 'elapsed_time_train', 'elapsed_time_infer', 'train_acc', 'valid_acc', 'test_acc'])
+
     for run in range(args.runs):
         model.reset_parameters()
 
@@ -321,14 +340,11 @@ if args.train_type == 'mini':
             time_end = torch.cuda.Event(enable_timing=True)
 
             time_start.record()
-            loss, _ = train_mini()
+            loss, _, batch_history = train_mini(batch_history)
             time_end.record()
 
             torch.cuda.synchronize()
             elapsed_time_train = time_start.elapsed_time(time_end) / 1000.0
-
-            time_list_train = np.append(time_list_train, elapsed_time_train)
-            loss_list_train = np.append(loss_list_train, loss)
 
             time_start.record()
             result = test_mini()
@@ -336,11 +352,6 @@ if args.train_type == 'mini':
 
             torch.cuda.synchronize()
             elapsed_time_infer = time_start.elapsed_time(time_end) / 1000.0
-
-            time_list_infer = np.append(time_list_infer, elapsed_time_infer)
-            acc_list_train = np.append(acc_list_train, result[0])
-            acc_list_val = np.append(acc_list_val, result[1])
-            acc_list_test = np.append(acc_list_test, result[2])
 
             logger.add_result(run, result)
 
@@ -355,11 +366,16 @@ if args.train_type == 'mini':
                     f'Test: {100 * test_acc:.2f}%, '
                     f'Train Time: {elapsed_time_train:.8f}s,'
                     f'Infer Time: {elapsed_time_infer:.8f}s')
+
+            acc_history.loc[len(acc_history)] = [len(acc_history), elapsed_time_train, elapsed_time_infer, train_acc, valid_acc, test_acc]
+
         print('====Mini-batch GraphSAGE result====')            
         logger.print_statistics(run)
     logger.print_statistics()
 
 else:
+    acc_history = pd.DataFrame(columns=['epoch', 'elapsed_time_train', 'elapsed_time_infer', 'train_acc', 'valid_acc', 'test_acc'])
+
     for run in range(args.runs):
         model.reset_parameters()
 
@@ -374,8 +390,6 @@ else:
             torch.cuda.synchronize()
             elapsed_time_train = time_start.elapsed_time(time_end) / 1000.0
 
-            time_list_train = np.append(time_list_train, elapsed_time_train)
-            loss_list_train = np.append(loss_list_train, loss)
 
             time_start.record()
             result = test_full()
@@ -383,11 +397,6 @@ else:
 
             torch.cuda.synchronize()
             elapsed_time_infer = time_start.elapsed_time(time_end) / 1000.0
-
-            time_list_infer = np.append(time_list_infer, elapsed_time_infer)
-            acc_list_train = np.append(acc_list_train, result[0])
-            acc_list_val = np.append(acc_list_val, result[1])
-            acc_list_test = np.append(acc_list_test, result[2])
 
             logger.add_result(run, result)
 
@@ -402,28 +411,21 @@ else:
                     f'Test: {100 * test_acc:.2f}%,'
                     f'Train Time: {elapsed_time_train:.8f}s,'
                     f'Infer Time: {elapsed_time_infer:.8f}s')
+            
+            acc_history.loc[len(acc_history)] = [len(acc_history), elapsed_time_train, elapsed_time_infer, train_acc, valid_acc, test_acc]
+
         print('====Full-batch GraphSAGE result====')            
         logger.print_statistics(run)
     logger.print_statistics()
 
-df = pd.DataFrame({
-    'loss' : loss_list_train,
-    'train_time' : time_list_train,
-    'acc_train' : acc_list_train,
-    'acc_val' : acc_list_val,
-    'acc_test' : acc_list_test,
-    'infer_time' : time_list_infer
-})
-
-dir_name = './time_result/'
-
-if args.train_type == 'mini':
-    file_name = f'ogbn_products_sage_singleGPU_{args.train_type}_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'
-
-else:
-    file_name = f'ogbn_products_sage_singleGPU_{args.train_type}_layer{args.num_layers}_hidden{args.hidden_channels}.csv'
+dir_name = '../logs/single_gpu/'
 
 if not os.path.isdir(dir_name):
     os.mkdir(dir_name)
 
-df.to_csv(dir_name + file_name)
+if args.train_type == 'mini':
+    batch_history.to_csv(dir_name + f'ogbn_products_sage_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_{args.train_type}.csv', index=False)
+    acc_history.to_csv(dir_name + f'ogbn_products_sage_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_{args.train_type}.csv', index=False)
+
+else:
+    acc_history.to_csv(dir_name + f'ogbn_products_sage_acc_layer{args.num_layers}_hidden{args.hidden_channels}_{args.train_type}.csv', index=False)
