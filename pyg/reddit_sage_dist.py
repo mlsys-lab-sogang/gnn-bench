@@ -29,6 +29,7 @@ from torch_geometric.datasets import Reddit
 from torch_geometric.nn import SAGEConv
 from torch_geometric.loader import NeighborLoader
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Reddit (GraphSAGE_Distributed)')
 
@@ -42,15 +43,13 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if args.fanout is None or args.batch_size is None:
-        raise Exception ("Should specify '--fanout' and '--batch_size'")
-
     if len(args.fanout) != args.num_layers:
-        raise Exception (f"Fanout length should be same with 'num_layers' (len(fanout)({len(args.fanout)}) != num_layers({args.num_layers})).")
+        raise Exception(f"Fanout length should be same with 'num_layers' (len(fanout)({len(args.fanout)}) != num_layers({args.num_layers})).")
 
     print(args)
 
     return args
+
 
 class SAGE_Dist(torch.nn.Module):
     """Mini-batch GraphSAGE"""
@@ -58,7 +57,7 @@ class SAGE_Dist(torch.nn.Module):
         super(SAGE_Dist, self).__init__()
 
         self.conv_layers = torch.nn.ModuleList()
-        self.conv_layers.append(SAGEConv(in_channels, hidden_channels, aggr='mean'))            # 1st layer
+        self.conv_layers.append(SAGEConv(in_channels, hidden_channels, aggr='mean'))            # first layer
         for _ in range(num_layers - 2):
             self.conv_layers.append(SAGEConv(hidden_channels, hidden_channels, aggr='mean'))    # hidden layers
         self.conv_layers.append(SAGEConv(hidden_channels, out_channels, aggr='mean'))           # last layer
@@ -70,9 +69,9 @@ class SAGE_Dist(torch.nn.Module):
         for conv in self.conv_layers:
             conv.reset_parameters()
 
-    #### FIXME: (0215) adj_t -> edge_index 
-    ## Since we are using SparseTensor, not 'edge_index', we will use adj_t for message passing.
-    ## SparseTensor accelerates message passing. (https://github.com/pyg-team/pytorch_geometric/discussions/4901)
+    # FIXME: (0215) adj_t -> edge_index 
+    # Since we are using SparseTensor, not 'edge_index', we will use adj_t for message passing.
+    # SparseTensor accelerates message passing. (https://github.com/pyg-team/pytorch_geometric/discussions/4901)
     # def forward(self, x, adj_t):
     def forward(self, x, edge_index):
         for conv in self.conv_layers[:-1]: # message passing from 1st layer to hidden layers
@@ -99,7 +98,7 @@ class SAGE_Dist(torch.nn.Module):
                 xs.append(x[:batch.batch_size].cpu())               # will move it to main memory for inference.
             x_all = torch.cat(xs, dim=0)
         return x_all
-    ####
+
 
 # This function will copied to each GPU device.
 # Process will made as # of GPUs, and each process will take each GPU.
@@ -114,17 +113,16 @@ def run(rank, world_size, dataset, args):
 
     data = dataset[0]
 
-    # ### FIXME: Data loading time check add.
+    # FIXME: Data loading time check add.
     # start = torch.cuda.Event(enable_timing=True)
     # end = torch.cuda.Event(enable_timing=True)
 
     # start.record()
-    ## Send node features and labels to device for faster access during sampling.
+    # Send node features and labels to device for faster access during sampling.
     data = data.to(rank, 'x', 'y')
     # end.record()
 
     # print(f'Total data loading time in {world_size} GPU : {start.elapsed_time(end) / 1000.0:.4f}s')  # This will apprear as many as # of GPUs? (need to confirm)
-    ###
 
     # Split training indices into chunks as 'world_size'. 
     train_idx = data.train_mask.nonzero(as_tuple=False).view(-1)
@@ -179,19 +177,19 @@ def run(rank, world_size, dataset, args):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
-    ## FIXME: For time checking, we will save each GPU's train time to .csv file. (csv file will made as # of GPUs.)
+    # FIXME: For time checking, we will save each GPU's train time to .csv file. (csv file will made as # of GPUs.)
     batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_allocated'])
     acc_history = pd.DataFrame(columns=['epoch', 'train_acc', 'valid_acc', 'test_acc'])
 
     for epoch in range(args.epochs):
         
-        ### FIXME: Running time check add
+        # FIXME: Running time check add
         start_time = torch.cuda.Event(enable_timing=True)
         end_time = torch.cuda.Event(enable_timing=True)
 
         model.train()
 
-        ### FIXME: adj_t -> edge_index
+        # FIXME: adj_t -> edge_index
         for batch in train_loader:
             start_time.record()
             optimizer.zero_grad()
@@ -218,9 +216,8 @@ def run(rank, world_size, dataset, args):
             batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_allocaated]
         
         print(f'Epoch: {epoch:03d}, GPU: {rank}, Loss: {loss:.4f}')
-        ###
-        
-        ## FIXME: Maybe handle file saving later?
+
+        # FIXME: Maybe handle file saving later?
         # device_dict[f'Epoch_{epoch:03d}'] = {f'GPU_{rank}' : [loss.item(), elapsed_time]}
         # device_dict[f'GPU_{rank}'] += [elapsed_time] # This will append each training time into dict's value.
 
@@ -229,8 +226,8 @@ def run(rank, world_size, dataset, args):
 
         # print(device_dict) # {'Epoch_000': {'GPU_0': [0.32919108867645264, 5.3712529296875]}}
 
-        ## We evaluate on a single process for now.
-        ## FIXME: We can aggregate each GPU's output, and calculate aggregated loss. (Official code is just doing inference in only 1 GPU.)
+        # We evaluate on a single process for now.
+        # FIXME: We can aggregate each GPU's output, and calculate aggregated loss. (Official code is just doing inference in only 1 GPU.)
         if rank == 0:
             # print(f'Epoch {epoch:03d}, Loss: {loss:.4f}')
             start_time.record()
@@ -269,10 +266,11 @@ def run(rank, world_size, dataset, args):
 
     dist.destroy_process_group()
 
+
 if __name__ == '__main__':
     args = parse_args()
 
-    ### FIXME: (0215) Since DDP can't use SparseTensor, we can use 'edge_index' as originally.
+    # FIXME: (0215) Since DDP can't use SparseTensor, we can use 'edge_index' as originally.
     # dataset = Reddit(root='../dataset/reddit/', transform=T.ToSparseTensor())
     dataset = Reddit(root='../dataset/reddit/')
 
