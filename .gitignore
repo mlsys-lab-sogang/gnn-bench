@@ -154,3 +154,6 @@ cython_debug/
 
 # Datasets
 dataset
+
+# Virtual Envs (We use gnn-env)
+*env
