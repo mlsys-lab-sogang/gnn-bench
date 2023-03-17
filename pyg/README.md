@@ -170,6 +170,15 @@ python ogbn_products_sage_dist.py --num_layers 3 --hidden_channels 128 --dropout
  - And we set **number of neighbors to sample for each node in each iteration** to `[15, 10, 5]` by `--fanout 15 10 5`. 
 
 
+<br>
+
+> Also we can run those scripts by **torchrun** style.
+- We provide some **torchrun** shell scripts, so we can use it.  
+- And each .sh files uses different `fanout`.   
+- Just type like this : `./reddit_dist_fanout_15_10_5.sh NUM_GPUS_IN_LOCAL`    
+- For example, if we have 4 GPU in single machine, command will like this : `./reddit_dist_fanout_15_10_5.sh 4`
+
+
 </div>
 </details>
 
