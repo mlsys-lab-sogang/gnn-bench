@@ -6,13 +6,12 @@ from torch_geometric.datasets import Reddit
 from ogb.nodeproppred import PygNodePropPredDataset
 
 
-def generate_pdf():
-  pdf = pd.DataFrame()
-
+def generate_degree():
   print("----------------------------")
   print("|     Summary of Reddit    |")
   print("----------------------------")
 
+  degree_reddit = pd.DataFrame()
   dataset = Reddit(root="dataset/reddit")
 
   # there is only one graph in Node Property Prediction datasets
@@ -38,24 +37,15 @@ def generate_pdf():
   print("degrees.max(): {}".format(degrees.max()))                  # degrees.max(): 43314
   print("degrees.std(): {}".format(degrees.std()))                  # degrees.std(): 1599.636410194922
 
-  norms = np.zeros(shape=(degrees.max()-degrees.min()+1), dtype=np.float64)
-  pdfs = np.zeros(shape=(degrees.max()-degrees.min()+1), dtype=np.float64)
-
-  for degree in tqdm(degrees):
-    pdfs[degree-degrees.min()] += 1.0
-
-  for idx in tqdm(range(degrees.max()-degrees.min()+1)):
-    norms[idx] = (norms[idx]-degrees.min())/(degrees.max()-degrees.min())
-    pdfs[idx] /= degrees.size
-
-  pdf["degree_reddit"] = pd.Series(range(degrees.min(), degrees.max()+1))
-  pdf["norm_reddit"] = pd.Series(norms)
-  pdf["pdf_reddit"] = pd.Series(pdfs)
+  degree_reddit["node"] = pd.Series(range(data.num_nodes))
+  degree_reddit["degree"] = pd.Series(degrees)
+  degree_reddit.to_csv("logs/degree_reddit.csv", index=False)
 
   print("----------------------------")
   print("| Summary of Ogbn-Products |")
   print("----------------------------")
 
+  degree_ogbn_products = pd.DataFrame()
   dataset = PygNodePropPredDataset(name="ogbn-products")
 
   print("Length: {}".format(len(dataset)))                          # Length: 1
@@ -80,24 +70,15 @@ def generate_pdf():
   print("degrees.max(): {}".format(degrees.max()))                  # degrees.max(): 34962
   print("degrees.std(): {}".format(degrees.std()))                  # degrees.std(): 191.80998979272695
 
-  norms = np.zeros(shape=(degrees.max()-degrees.min()+1), dtype=np.float64)
-  pdfs = np.zeros(shape=(degrees.max()-degrees.min()+1), dtype=np.float64)
-
-  for degree in tqdm(degrees):
-    pdfs[degree-degrees.min()] += 1.0
-
-  for idx in tqdm(range(degrees.max()-degrees.min()+1)):
-    norms[idx] = (norms[idx]-degrees.min())/(degrees.max()-degrees.min())
-    pdfs[idx] /= degrees.size
-
-  pdf["degree_ogbn_products"] = pd.Series(range(degrees.min(), degrees.max()+1))
-  pdf["norm_ogbn_products"] = pd.Series(norms)
-  pdf["pdf_ogbn_products"] = pd.Series(pdfs)
+  degree_ogbn_products["node"] = pd.Series(range(data.num_nodes))
+  degree_ogbn_products["degree"] = pd.Series(degrees)
+  degree_ogbn_products.to_csv("logs/degree_ogbn_products.csv", index=False)
 
   print("----------------------------")
   print("|  Summary of Ogbn-Papers  |")
   print("----------------------------")
 
+  degree_ogbn_papers100M = pd.DataFrame()
   dataset = PygNodePropPredDataset(name="ogbn-papers100M")
 
   print("Length: {}".format(len(dataset)))
@@ -121,24 +102,10 @@ def generate_pdf():
   print("degrees.max(): {}".format(degrees.max()))
   print("degrees.std(): {}".format(degrees.std()))
 
-  norms = np.zeros(shape=(degrees.max()-degrees.min()+1), dtype=np.float64)
-  pdfs = np.zeros(shape=(degrees.max()-degrees.min()+1), dtype=np.float64)
+  degree_ogbn_papers100M["node"] = pd.Series(range(data.num_nodes))
+  degree_ogbn_papers100M["degree"] = degrees
+  degree_ogbn_papers100M.to_csv("logs/degree_ogbn_papers100M.csv", index=False)
 
-  for degree in tqdm(degrees):
-    pdfs[degree-degrees.min()] += 1.0
-
-  for idx in tqdm(range(degrees.max()-degrees.min()+1)):
-    norms[idx] = (norms[idx]-degrees.min())/(degrees.max()-degrees.min())
-    pdfs[idx] /= degrees.size
-
-  pdf["degree_ogbn_papers100M"] = pd.Series(range(degrees.min(), degrees.max()+1))
-  pdf["norm_ogbn_papers100M"] = pd.Series(norms)
-  pdf["pdf_ogbn_papers100M"] = pd.Series(pdfs)
-
-  pdf.to_csv("logs/degree_pdf.csv", index=False)
-
-def main():
-  generate_pdf()
 
 if __name__ == "__main__":
-  main()
+  generate_degree()
