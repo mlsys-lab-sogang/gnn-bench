@@ -1,18 +1,11 @@
 """
-Edit by HappySky12
-
-Official : https://github.com/pyg-team/pytorch_geometric/blob/master/examples/multi_gpu/distributed_sampling.py (PyG example)
-
-This code is for (distributed) data parallel training for multiple GPUs.
-
-Since we are not using such graph partitioning scheme, only using neighbor sampling, this script will run in only mini-batch manner. 
-
-(0215) FIX : This script can't run 'adj_t' (SparseTensor) as input. Maybe it's some PyTorch's issue, so fixed 'adj_t' to 'edge_index' as official code.
+Data-parallel training script for GraphSAGE with Reddit dataset.
+The original source from PyTorch Geometric is available at:
+    https://github.com/pyg-team/pytorch_geometric/blob/master/examples/multi_gpu/distributed_sampling.py
 """
-
 import argparse
 import copy
-import os 
+import os
 
 import pandas as pd
 
@@ -20,31 +13,28 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn.functional as F
-
 from torch.nn.parallel import DistributedDataParallel
 
 import torch_geometric.transforms as T
-
 from torch_geometric.datasets import Reddit
 from torch_geometric.nn import SAGEConv
 from torch_geometric.loader import NeighborLoader
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Reddit (GraphSAGE_Distributed)')
-
+    parser = argparse.ArgumentParser(description="Data-parallel training of GraphSAGE with Reddit")
     parser.add_argument('--num_layers', type=int, default=3)
     parser.add_argument('--hidden_channels', type=int, default=128) 
     parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--epochs', type=int, default=300)
-    parser.add_argument('--fanout', type=int, nargs='+', help="# of fanouts. Should be len(fanout) == len(num_layers).", required=True)
-    parser.add_argument('--batch_size', type=int, help="# of anchor node in each batch. # of batch will be 'len(num_nodes)/len(batch_size)'", required=True)
+    parser.add_argument('--fanout', type=int, nargs='+', help="# of fanouts.", required=True)
+    parser.add_argument('--batch_size', type=int, help="Number of anchor nodes in each batch. The number of batches would be 'len(num_nodes)/len(batch_size)'", required=True)
 
     args = parser.parse_args()
 
-    if len(args.fanout) != args.num_layers:
-        raise Exception(f"Fanout length should be same with 'num_layers' (len(fanout)({len(args.fanout)}) != num_layers({args.num_layers})).")
+    assert len(args.fanout) == args.num_layers, \
+        f"Length of fanout should be same with num_layers: len(fanout)({len(args.fanout)}) != num_layers({args.num_layers}))."
 
     print(args)
 
@@ -57,10 +47,10 @@ class SAGE_Dist(torch.nn.Module):
         super(SAGE_Dist, self).__init__()
 
         self.conv_layers = torch.nn.ModuleList()
-        self.conv_layers.append(SAGEConv(in_channels, hidden_channels, aggr='mean'))            # first layer
+        self.conv_layers.append(SAGEConv(in_channels, hidden_channels, aggr='mean'))         # first layer
         for _ in range(num_layers - 2):
-            self.conv_layers.append(SAGEConv(hidden_channels, hidden_channels, aggr='mean'))    # hidden layers
-        self.conv_layers.append(SAGEConv(hidden_channels, out_channels, aggr='mean'))           # last layer
+            self.conv_layers.append(SAGEConv(hidden_channels, hidden_channels, aggr='mean')) # hidden layers
+        self.conv_layers.append(SAGEConv(hidden_channels, out_channels, aggr='mean'))        # last layer
 
         self.dropout = dropout
         self.num_layers = num_layers
@@ -71,7 +61,7 @@ class SAGE_Dist(torch.nn.Module):
 
     # FIXME: (0215) adj_t -> edge_index 
     # Since we are using SparseTensor, not 'edge_index', we will use adj_t for message passing.
-    # SparseTensor accelerates message passing. (https://github.com/pyg-team/pytorch_geometric/discussions/4901)
+    # SparseTensor accelerates message passing (https://github.com/pyg-team/pytorch_geometric/discussions/4901).
     # def forward(self, x, adj_t):
     def forward(self, x, edge_index):
         for conv in self.conv_layers[:-1]: # message passing from 1st layer to hidden layers
@@ -90,12 +80,12 @@ class SAGE_Dist(torch.nn.Module):
         for i, conv in enumerate(self.conv_layers):
             xs = []
             for batch in subgraph_loader:
-                x = x_all[batch.n_id.to(x_all.device)].to(device)   # access to original index, since index in batch is differ from original.
-                # x = conv(x, batch.adj_t.to(device))                 # message_passing for all nodes (in mini-batch).
+                x = x_all[batch.n_id.to(x_all.device)].to(device) # access to original index, since index in batch is differ from original.
+                # x = conv(x, batch.adj_t.to(device))             # message_passing for all nodes (in mini-batch).
                 x = conv(x, batch.edge_index.to(device))
                 if i < len(self.conv_layers) - 1:
                     x = F.relu(x)
-                xs.append(x[:batch.batch_size].cpu())               # will move it to main memory for inference.
+                xs.append(x[:batch.batch_size].cpu())             # will move it to main memory for inference.
             x_all = torch.cat(xs, dim=0)
         return x_all
 
@@ -105,8 +95,6 @@ class SAGE_Dist(torch.nn.Module):
 # And each process will execute this function by using each GPU, in parallel manner.
 def run(rank, world_size, dataset, args):
     """Run GraphSAGE in Distributed Data Parallel (DDP) Manner."""
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12355'
 
     # world_size is same as # of GPUs (in single machine - multi GPU).
     dist.init_process_group(backend='nccl', rank=rank, world_size=world_size)
@@ -182,7 +170,6 @@ def run(rank, world_size, dataset, args):
     acc_history = pd.DataFrame(columns=['epoch', 'train_acc', 'valid_acc', 'test_acc'])
 
     for epoch in range(args.epochs):
-        
         # FIXME: Running time check add
         start_time = torch.cuda.Event(enable_timing=True)
         end_time = torch.cuda.Event(enable_timing=True)
@@ -251,31 +238,30 @@ def run(rank, world_size, dataset, args):
 
             print(f'Epoch: {epoch:03d}, GPU: {rank}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time: {elapsed_time:.8f}s')
         
-        # Must synchronize all GPUs.
+        # synchronize all workers.
         dist.barrier()
 
-    dir_name = '../logs/multi_gpu/'
+    dir_name = '../logs/'
 
     if rank == 0:
         if not os.path.isdir(dir_name):
             os.mkdir(dir_name)
-        acc_history.to_csv(dir_name + f'reddit_sage_multiGPU_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv', index=False)
-    
-    file_name = f'reddit_sage_multiGPU_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{rank}.csv'
-    batch_history.to_csv(dir_name + file_name, index=False)
+        acc_history.to_csv(os.path.join(dir_name, f'reddit_sage_dist_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'), index=False)
+
+    batch_history.to_csv(os.path.join(dir_name, f'reddit_sage_dist_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{rank}.csv'), index=False)
 
     dist.destroy_process_group()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_args()
 
-    # FIXME: (0215) Since DDP can't use SparseTensor, we can use 'edge_index' as originally.
+    # FIXME: (0215) Since DDP cannot use SparseTensor, we use `edge_index`.
     # dataset = Reddit(root='../dataset/reddit/', transform=T.ToSparseTensor())
-    dataset = Reddit(root='../dataset/reddit/')
+    dataset = Reddit(root="../dataset/reddit/")
 
     world_size = torch.cuda.device_count()
 
-    print(f'Using {world_size} GPUs...')
+    print(f"Using {world_size} GPUs")
 
-    mp.spawn(run, args=(world_size, dataset, args), nprocs=world_size, join=True) # join : Perform a blocking join on all processes.
+    mp.spawn(run, args=(world_size, dataset, args), nprocs=world_size, join=True) # join: exploits all processes in a blocking join manner.
