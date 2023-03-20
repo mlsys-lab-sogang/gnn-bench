@@ -24,10 +24,10 @@ from torch_geometric.loader import NeighborLoader
 def parse_args():
     parser = argparse.ArgumentParser(description="Data-parallel training of GraphSAGE with Reddit")
     parser.add_argument('--num_layers', type=int, default=3)
-    parser.add_argument('--hidden_channels', type=int, default=128) 
+    parser.add_argument('--hidden_channels', type=int, default=128)
     parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--lr', type=float, default=0.01)
-    parser.add_argument('--epochs', type=int, default=300)
+    parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--fanout', type=int, nargs='+', help="# of fanouts.", required=True)
     parser.add_argument('--batch_size', type=int, help="Number of anchor nodes in each batch. The number of batches would be 'len(num_nodes)/len(batch_size)'", required=True)
 
@@ -241,14 +241,14 @@ def run(rank, world_size, dataset, args):
         # synchronize all workers.
         dist.barrier()
 
-    dir_name = '../logs/'
+    log_dir = '../logs/'
 
     if rank == 0:
-        if not os.path.isdir(dir_name):
-            os.mkdir(dir_name)
-        acc_history.to_csv(os.path.join(dir_name, f'reddit_sage_dist_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'), index=False)
+        if not os.path.isdir(log_dir):
+            os.mkdir(log_dir)
+        acc_history.to_csv(os.path.join(log_dir, f'reddit_sage_dist_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv'), index=False)
 
-    batch_history.to_csv(os.path.join(dir_name, f'reddit_sage_dist_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{rank}.csv'), index=False)
+    batch_history.to_csv(os.path.join(log_dir, f'reddit_sage_dist_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{rank}.csv'), index=False)
 
     dist.destroy_process_group()
 
@@ -258,7 +258,10 @@ if __name__ == "__main__":
 
     # FIXME: (0215) Since DDP cannot use SparseTensor, we use `edge_index`.
     # dataset = Reddit(root='../dataset/reddit/', transform=T.ToSparseTensor())
-    dataset = Reddit(root="../dataset/reddit/")
+    data_dir = "../dataset/reddit/"
+    if not os.path.isdir(data_dir):
+        os.mkdir(data_dir)
+    dataset = Reddit(root=data_dir)
 
     world_size = torch.cuda.device_count()
 
