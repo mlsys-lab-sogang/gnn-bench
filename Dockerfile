@@ -1,15 +1,13 @@
-FROM python:3.8
+FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-runtime
 
-COPY ./degree_generator.py /degree_generator.py
-COPY ./requirements.txt /requirements.txt
+COPY ./degree_generator.py /
+COPY ./degree_generator.sh /
+COPY ./requirements.txt /
 
 RUN mkdir /logs/
 RUN mkdir -p /dataset/reddit/
 
-WORKDIR /
-
-RUN pip install torch==1.12.0+cu113 --extra-index-url https://download.pytorch.org/whl/cu113 && \
-    pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv torch_geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html && \
+RUN pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv torch_geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html && \
     pip install -r /requirements.txt
 
-CMD ["python3 degree_generator.py"]
+CMD ["bash", "/degree_generator.sh"]
