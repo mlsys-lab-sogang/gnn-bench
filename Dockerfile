@@ -7,7 +7,8 @@ COPY ./requirements.txt /
 RUN mkdir /logs/
 RUN mkdir -p /dataset/reddit/
 
-RUN pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv torch_geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html && \
+RUN pip install --upgrade pip && \
+    pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv torch_geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html && \
     pip install -r /requirements.txt
 
 CMD ["bash", "/degree_generator.sh"]
