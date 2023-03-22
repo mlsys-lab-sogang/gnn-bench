@@ -1,15 +1,22 @@
-FROM python:3.8
+FROM FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
+
+RUN mkdir /pyg/
+RUN mkdir /logs/
+RUN mkdir /dataset/
 
 COPY ./ /pyg/
-COPY ../requirements.txt /requirements.txt
+COPY ../requirements.txt /
 
 WORKDIR /pyg/
 
-RUN pip install torch==1.12.0+cu113 --extra-index-url https://download.pytorch.org/whl/cu113 && \
-    pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv torch_geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html && \
-    pip install -r /requirements.txt
+RUN pip install --upgrade pip
+RUN pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
+RUN pip install torch-geometric
+RUN pip install -r /requirements.txt
+RUN pip uninstall -y outdated
 
+ENV RANK $RANK
 ENV MASTER_ADDR $MASTER_ADDR
 ENV MASTER_PORT $MASTER_PORT
 
-CMD ["./reddit_sage_dist.sh"]
+CMD ["bash reddit_sage_dist.sh"]

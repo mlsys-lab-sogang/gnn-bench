@@ -1,5 +1,3 @@
-# Official : https://github.com/snap-stanford/ogb/blob/master/examples/nodeproppred/products/logger.py
-
 import torch
 
 
