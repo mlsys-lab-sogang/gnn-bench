@@ -220,11 +220,8 @@ if __name__ == "__main__":
     args = parse_args()
 
     # Since DDP cannot use SparseTensor, we use edge_index.
-    # dataset = Reddit(root='../dataset/reddit/', transform=T.ToSparseTensor())
-    data_dir = "../dataset/reddit/"
-    if not os.path.isdir(data_dir):
-        os.mkdir(data_dir)
-    dataset = Reddit(root=data_dir)
+    # dataset = Reddit(root="../dataset/reddit/", transform=T.ToSparseTensor())
+    dataset = Reddit(root="../dataset/reddit/")
 
     args.world_size = args.num_gpus * args.num_nodes
 
