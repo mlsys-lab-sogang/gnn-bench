@@ -5,7 +5,7 @@ RUN mkdir /logs/
 RUN mkdir /dataset/
 
 COPY ./ /pyg/
-COPY ../requirements.txt /
+COPY ../requirements.txt /requirements.txt
 
 WORKDIR /pyg/
 
