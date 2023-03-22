@@ -1,6 +1,5 @@
 FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
 
-RUN mkdir /pyg/
 RUN mkdir /logs/
 RUN mkdir /dataset/
 
@@ -14,9 +13,5 @@ RUN pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/t
 RUN pip install torch-geometric
 RUN pip install -r /requirements.txt
 RUN pip uninstall -y outdated
-
-ENV RANK $RANK
-ENV MASTER_ADDR $MASTER_ADDR
-ENV MASTER_PORT $MASTER_PORT
 
 CMD ["bash reddit_sage_dist.sh"]
