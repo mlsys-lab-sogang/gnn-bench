@@ -1,4 +1,4 @@
-FROM FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
+FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
 
 RUN mkdir /pyg/
 RUN mkdir /logs/
