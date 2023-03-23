@@ -67,7 +67,7 @@ class SAGE_Dist(torch.nn.Module):
             x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.conv_layers[-1](x, edge_index) # message passing from last hidden layer to last layer
         return x
-    
+
     @torch.no_grad()
     def inference(self, x_all, device, subgraph_loader):
         # GraphSAGE takes **all 1-hop neighbors** to compute node representations for each layer.
@@ -110,7 +110,7 @@ def run(local_rank, dataset, logger, args):
         shuffle = True,
         drop_last = True,
         batch_size = args.batch_size, # nodes in data[train_idx] is anchor nodes to make computation graph in each mini-batch, and # of anchor node in each mini-batch is same as 'batch_size'.
-        num_workers = 6,
+        num_workers = 16,
         persistent_workers = True
     )
 
