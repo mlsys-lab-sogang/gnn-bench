@@ -81,16 +81,17 @@ def generate_degree():
   degree_ogbn_papers100M = pd.DataFrame()
   dataset = PygNodePropPredDataset(name="ogbn-papers100M")
 
-  print("Length: {}".format(len(dataset)))
+  print("Length: {}".format(len(dataset)))                          # Length: 1
 
   data = dataset[0]
-  print("Graph: {}".format(data))
-  print("Edges: {}".format(data.edge_index))
-  print("Number of nodes: {}".format(data.num_nodes))
-  print("Number of edges: {}".format(data.num_edges))
-  print("Has isolated nodes: {}".format(data.has_isolated_nodes()))
-  print("Has self loops: {}".format(data.has_self_loops()))
-  print("Is directed: {}".format(data.is_directed()))
+  print("Graph: {}".format(data))                                   # Graph: Data(num_nodes=111059956, edge_index=[2, 1615685872], x=[111059956, 128], node_year=[111059956, 1], y=[111059956, 1])
+  print("Edges: {}".format(data.edge_index))                        # Edges: tensor([[102309412,  13241850,  39897563,  ...,  81961837, 103522048, 92367769],
+                                                                    #                [        0,         1,         2,  ..., 111059945, 111059945, 111059954]])
+  print("Number of nodes: {}".format(data.num_nodes))               # Number of nodes: 111059956
+  print("Number of edges: {}".format(data.num_edges))               # Number of edges: 1615685872
+  print("Has isolated nodes: {}".format(data.has_isolated_nodes())) # Has isolated nodes: False
+  print("Has self loops: {}".format(data.has_self_loops()))         # Has self loops: False
+  print("Is directed: {}".format(data.is_directed()))               # Is directed: True
 
   degrees = np.zeros(shape=(data.num_nodes), dtype=np.int64)
 
@@ -98,9 +99,9 @@ def generate_degree():
     degrees[data.edge_index[0][idx]] += 1
     degrees[data.edge_index[1][idx]] += 1
 
-  print("degrees.min(): {}".format(degrees.min()))
-  print("degrees.max(): {}".format(degrees.max()))
-  print("degrees.std(): {}".format(degrees.std()))
+  print("degrees.min(): {}".format(degrees.min()))                  # degrees.min(): 1
+  print("degrees.max(): {}".format(degrees.max()))                  # degrees.max(): 251471
+  print("degrees.std(): {}".format(degrees.std()))                  # degrees.std(): 101.48058110607936
 
   degree_ogbn_papers100M["node"] = pd.Series(range(data.num_nodes))
   degree_ogbn_papers100M["degree"] = degrees
