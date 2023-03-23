@@ -6,7 +6,6 @@ The original source from PyTorch Geometric is available at:
 import argparse
 import copy
 import os
-import sys
 import logging
 
 import pandas as pd
@@ -110,7 +109,7 @@ def run(local_rank, dataset, logger, args):
         shuffle = True,
         drop_last = True,
         batch_size = args.batch_size, # nodes in data[train_idx] is anchor nodes to make computation graph in each mini-batch, and # of anchor node in each mini-batch is same as 'batch_size'.
-        num_workers = 16,
+        num_workers = 4*args.num_gpus,
         persistent_workers = True
     )
 
@@ -127,7 +126,7 @@ def run(local_rank, dataset, logger, args):
             num_neighbors = [-1], # consider all 1-hop neighbors to compute node representation.
             shuffle = False,
             batch_size = args.batch_size,
-            num_workers = 6,
+            num_workers = 4*args.num_gpus,
             persistent_workers = True
         )
 
@@ -214,10 +213,7 @@ def run(local_rank, dataset, logger, args):
 
 
 if __name__ == "__main__":
-    logger = logging.getLogger("log")
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(sys.stdout)
-    logger.addHandler(handler)
+    logger = mp.log_to_stderr(level=logging.DEBUG)
 
     args = parse_args()
 

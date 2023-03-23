@@ -10,7 +10,6 @@ WORKDIR /pyg/
 
 RUN pip install --upgrade pip
 RUN pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
-RUN pip install torch-geometric
 RUN pip install -r /requirements.txt
 RUN pip uninstall -y outdated
 
