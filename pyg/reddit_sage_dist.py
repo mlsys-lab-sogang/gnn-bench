@@ -6,6 +6,7 @@ The original source from PyTorch Geometric is available at:
 import argparse
 import copy
 import os
+import sys
 import logging
 
 import pandas as pd
@@ -83,7 +84,7 @@ class SAGE_Dist(torch.nn.Module):
         return x_all
 
 
-def run(local_rank, dataset, args):
+def run(local_rank, dataset, logger, args):
     r"""Train GraphSAGE in Distributed Data Parallel (DDP) Manner."""
 
     global_rank = args.node_id * args.num_gpus + local_rank
@@ -177,7 +178,7 @@ def run(local_rank, dataset, args):
             mem_allocaated = (after_alloc - before_alloc)/1024.0/1024.0
             batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_allocaated]
 
-        logging.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Loss: {loss:.4f}")
+        logger.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Loss: {loss:.4f}")
 
         # synchronize all workers.
         dist.barrier()
@@ -199,14 +200,12 @@ def run(local_rank, dataset, args):
             elapsed_time = start_time.elapsed_time(end_time) / 1000.0
             acc_history.loc[len(acc_history)] = [epoch, train_acc, val_acc, test_acc]
 
-            logging.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time: {elapsed_time:.8f}s")
+            logger.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time: {elapsed_time:.8f}s")
 
         # synchronize all workers.
         dist.barrier()
 
     if local_rank == 0:
-        if not os.path.isdir(log_dir):
-            os.mkdir(log_dir)
         acc_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv"), index=False)
 
     batch_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{local_rank}.csv"), index=False)
@@ -215,7 +214,10 @@ def run(local_rank, dataset, args):
 
 
 if __name__ == "__main__":
-    logging.basicConfig()
+    logger = logging.getLogger("log")
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(sys.stdout)
+    logger.addHandler(handler)
 
     args = parse_args()
 
@@ -225,7 +227,7 @@ if __name__ == "__main__":
 
     args.world_size = args.num_gpus * args.num_nodes
 
-    logging.info(f"Args: {args}")
-    logging.info(f"Using {args.world_size} GPUs")
+    logger.info(f"Args: {args}")
+    logger.info(f"Using {args.world_size} GPUs")
 
-    mp.spawn(run, args=(dataset, args), nprocs=args.num_gpus, join=True)
+    mp.spawn(run, args=(dataset, logger, args), nprocs=args.num_gpus, join=True)
