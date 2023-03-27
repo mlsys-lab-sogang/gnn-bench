@@ -205,9 +205,9 @@ def run(local_rank, dataset, logger, args):
         dist.barrier()
 
     if local_rank == 0:
-        acc_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_acc_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv"), index=False)
+        acc_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_acc_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv"), index=False)
 
-    batch_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_layer{args.num_layers}_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{local_rank}.csv"), index=False)
+    batch_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{local_rank}.csv"), index=False)
 
     dist.destroy_process_group()
 
