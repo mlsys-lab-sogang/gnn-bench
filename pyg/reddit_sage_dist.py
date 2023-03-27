@@ -28,11 +28,11 @@ def parse_args():
     parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--epochs', type=int, default=50)
-    parser.add_argument('--fanout', type=int, nargs='+', help="Number of fanouts.", required=True)
-    parser.add_argument('--batch_size', type=int, help="Number of anchor nodes at each batch. The number of batches would be 'len(num_nodes)/len(batch_size)'", required=True)
-    parser.add_argument('--num_nodes', type=int, default=2, help="Number of available nodes.")
-    parser.add_argument('--node_id', type=int, help="Unique ID of the node.", required=True)
-    parser.add_argument('--num_gpus', type=int, default=4, help="Number of GPUs in each node.")
+    parser.add_argument('--batch_size', type=int, default=1024)
+    parser.add_argument('--nnodes', type=int, default=2)
+    parser.add_argument('--nprocs', type=int, default=4)
+    parser.add_argument('--node_id', type=int, required=True)
+    parser.add_argument('--fanout', type=int, nargs='+', required=True)
     args = parser.parse_args()
 
     assert len(args.fanout) == args.num_layers, \
@@ -86,7 +86,7 @@ class SAGE_Dist(torch.nn.Module):
 def run(local_rank, dataset, logger, args):
     r"""Train GraphSAGE in Distributed Data Parallel (DDP) Manner."""
 
-    global_rank = args.node_id * args.num_gpus + local_rank
+    global_rank = args.node_id * args.nprocs + local_rank
 
     master_addr = os.environ["MASTER_ADDR"]
     master_port = os.environ["MASTER_PORT"]
@@ -109,7 +109,7 @@ def run(local_rank, dataset, logger, args):
         shuffle = True,
         drop_last = True,
         batch_size = args.batch_size, # nodes in data[train_idx] is anchor nodes to make computation graph in each mini-batch, and # of anchor node in each mini-batch is same as 'batch_size'.
-        num_workers = 4*args.num_gpus,
+        num_workers = 4*args.nprocs,
         persistent_workers = True
     )
 
@@ -126,7 +126,7 @@ def run(local_rank, dataset, logger, args):
             num_neighbors = [-1], # consider all 1-hop neighbors to compute node representation.
             shuffle = False,
             batch_size = args.batch_size,
-            num_workers = 4*args.num_gpus,
+            num_workers = 4*args.nprocs,
             persistent_workers = True
         )
 
@@ -221,9 +221,9 @@ if __name__ == "__main__":
     # dataset = Reddit(root="../dataset/reddit/", transform=T.ToSparseTensor())
     dataset = Reddit(root="../dataset/reddit/")
 
-    args.world_size = args.num_gpus * args.num_nodes
+    args.world_size = args.nnodes * args.nprocs
 
     logger.info(f"Args: {args}")
     logger.info(f"Using {args.world_size} GPUs")
 
-    mp.spawn(run, args=(dataset, logger, args), nprocs=args.num_gpus, join=True)
+    mp.spawn(run, args=(dataset, logger, args), nprocs=args.nprocs, join=True)
