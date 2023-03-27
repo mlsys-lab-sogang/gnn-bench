@@ -13,4 +13,4 @@ RUN pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/t
 RUN pip install -r /requirements.txt
 RUN pip uninstall -y outdated
 
-CMD ["bash /pyg/reddit_sage_dist.sh"]
+CMD ["/bin/bash", "reddit_sage_dist.sh"]
