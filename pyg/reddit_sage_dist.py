@@ -8,6 +8,8 @@ import copy
 import os
 import logging
 
+from datetime import datetime
+
 import pandas as pd
 
 import torch
@@ -174,7 +176,7 @@ def run(local_rank, dataset, logger, args):
             mem_allocaated = (after_alloc - before_alloc) / (1024.0 * 1024.0)
             batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_allocaated]
 
-        logger.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Loss: {loss:.4f}")
+        logger.info(f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} Epoch: {epoch:03d}, GPU: {local_rank}, Loss: {loss:.4f}")
 
         dist.barrier()
 
@@ -195,7 +197,7 @@ def run(local_rank, dataset, logger, args):
             elapsed_time = start_time.elapsed_time(end_time) / 1000.0
             acc_history.loc[len(acc_history)] = [epoch, train_acc, val_acc, test_acc]
 
-            logger.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time: {elapsed_time:.8f}s")
+            logger.info(f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} Epoch: {epoch:03d}, GPU: {local_rank}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time: {elapsed_time:.8f}s")
 
         dist.barrier()
 
@@ -209,10 +211,6 @@ def run(local_rank, dataset, logger, args):
 
 if __name__ == "__main__":
     logger = mp.log_to_stderr(level=logging.INFO)
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
 
     args = parse_args()
 
@@ -221,7 +219,7 @@ if __name__ == "__main__":
 
     args.world_size = args.nnodes * args.nprocs
 
-    logger.info(f"Args: {args}")
-    logger.info(f"Using {args.world_size} GPUs")
+    logger.info(f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} Args: {args}")
+    logger.info(f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} Using {args.world_size} GPUs")
 
     mp.spawn(run, args=(dataset, logger, args), nprocs=args.nprocs, join=True)
