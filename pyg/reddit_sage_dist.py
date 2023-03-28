@@ -152,6 +152,8 @@ def run(local_rank, dataset, logger, args):
     log_dir = '../logs/'
 
     for epoch in range(args.epochs):
+        logger.info(f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} Start train on epoch {epoch:03d}")
+
         start_time = torch.cuda.Event(enable_timing=True)
         end_time = torch.cuda.Event(enable_timing=True)
 
