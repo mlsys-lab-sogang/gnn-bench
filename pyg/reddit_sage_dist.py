@@ -88,17 +88,14 @@ def run(local_rank, dataset, logger, args):
 
     global_rank = args.node_id * args.nprocs + local_rank
 
-    master_addr = os.environ["MASTER_ADDR"]
-    master_port = os.environ["MASTER_PORT"]
-
-    dist.init_process_group(backend='nccl', rank=global_rank, world_size=args.world_size, init_method=f"tcp://{master_addr}:{master_port}")
+    dist.init_process_group(backend="nccl", rank=global_rank, world_size=args.world_size, init_method=f"tcp://{os.environ['MASTER_ADDR']}:{os.environ['MASTER_PORT']}")
 
     data = dataset[0]
 
     # Send node features and labels to device for faster access during sampling.
     data = data.to(local_rank, 'x', 'y')
 
-    # Split training indices into chunks as 'world_size'.
+    # Split training indices into `world_size` chunks.
     train_idx = data.train_mask.nonzero(as_tuple=False).view(-1)
     train_idx = train_idx.split(train_idx.size(0) // args.world_size)[local_rank]
 
@@ -119,7 +116,7 @@ def run(local_rank, dataset, logger, args):
     # This leads to faster computation in contrast to immediately computing final representations of each batch.
     # See Inductive Representation Learning on Large Graphs [Hamilton et al., 2017] (GraphSAGE).
     if local_rank == 0:
-        r"""Define neighbor loader for inference in 1st (main) process"""
+        # Define neighbor loader for inference in first (main) process
         subgraph_loader = NeighborLoader(
             data = copy.copy(data),
             input_nodes = None,   # make mini-batches with all nodes.
@@ -179,10 +176,9 @@ def run(local_rank, dataset, logger, args):
 
         logger.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Loss: {loss:.4f}")
 
-        # synchronize all workers.
         dist.barrier()
 
-        if local_rank == 0:
+        if global_rank == 0:
             start_time.record()
 
             model.eval()
@@ -201,24 +197,22 @@ def run(local_rank, dataset, logger, args):
 
             logger.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc: {test_acc:.4f}, Inference Time: {elapsed_time:.8f}s")
 
-        # synchronize all workers.
         dist.barrier()
 
-    if local_rank == 0:
-        acc_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_acc_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}.csv"), index=False)
+    if global_rank == 0:
+        acc_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_hidden{args.hidden_channels}_fanout{'_'.join(args.fanout)}_batch{args.batch_size}_acc.csv"), index=False)
 
-    batch_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_hidden{args.hidden_channels}_fanout{args.fanout}_batch{args.batch_size}_rank{local_rank}.csv"), index=False)
+    batch_history.to_csv(os.path.join(log_dir, f"reddit_sage_dist_hidden{args.hidden_channels}_fanout{'_'.join(args.fanout)}_batch{args.batch_size}_rank{global_rank}.csv"), index=False)
 
     dist.destroy_process_group()
 
 
 if __name__ == "__main__":
-    logger = mp.log_to_stderr(level=logging.DEBUG)
+    logger = mp.log_to_stderr(level=logging.INFO)
 
     args = parse_args()
 
     # Since DDP cannot use SparseTensor, we use edge_index.
-    # dataset = Reddit(root="../dataset/reddit/", transform=T.ToSparseTensor())
     dataset = Reddit(root="../dataset/reddit/")
 
     args.world_size = args.nnodes * args.nprocs
