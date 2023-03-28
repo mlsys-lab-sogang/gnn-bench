@@ -208,8 +208,11 @@ def run(local_rank, dataset, logger, args):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format="%(asctime)s %(clientip)-15s %(user)-8s %(message)s")
     logger = mp.log_to_stderr(level=logging.INFO)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s %(name)-12s %(levelname)-8s %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
     args = parse_args()
 
