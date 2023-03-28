@@ -105,7 +105,7 @@ def run(local_rank, dataset, logger, args):
         num_neighbors = args.fanout,
         shuffle = True,
         drop_last = True,
-        batch_size = args.batch_size, # nodes in data[train_idx] is anchor nodes to make computation graph in each mini-batch, and # of anchor node in each mini-batch is same as 'batch_size'.
+        batch_size = args.batch_size, # nodes in data[train_idx] are anchor nodes to make the computation graph in each mini-batch.
         num_workers = 4*args.nprocs,
         persistent_workers = True
     )
@@ -171,7 +171,7 @@ def run(local_rank, dataset, logger, args):
             end_time.record()
             torch.cuda.synchronize()
             elapsed_time = start_time.elapsed_time(end_time) / 1000.0
-            mem_allocaated = (after_alloc - before_alloc)/1024.0/1024.0
+            mem_allocaated = (after_alloc - before_alloc) / (1024.0 * 1024.0)
             batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_allocaated]
 
         logger.info(f"Epoch: {epoch:03d}, GPU: {local_rank}, Loss: {loss:.4f}")
@@ -208,6 +208,7 @@ def run(local_rank, dataset, logger, args):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(format="%(asctime)s %(clientip)-15s %(user)-8s %(message)s")
     logger = mp.log_to_stderr(level=logging.INFO)
 
     args = parse_args()
