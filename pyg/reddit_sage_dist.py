@@ -26,7 +26,7 @@ from torch_geometric.loader import NeighborLoader
 def parse_args():
     parser = argparse.ArgumentParser(description="Data-parallel training of GraphSAGE with Reddit")
     parser.add_argument('--num_layers', type=int, default=3)
-    parser.add_argument('--hidden_channels', type=int, default=32)
+    parser.add_argument('--hidden_channels', type=int, default=64)
     parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--epochs', type=int, default=50)
