@@ -26,7 +26,7 @@ from torch_geometric.loader import NeighborLoader
 def parse_args():
     parser = argparse.ArgumentParser(description="Data-parallel training of GraphSAGE with Reddit")
     parser.add_argument('--num_layers', type=int, default=3)
-    parser.add_argument('--hidden_channels', type=int, default=32)
+    parser.add_argument('--hidden_channels', type=int, default=256)
     parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--epochs', type=int, default=50)
@@ -50,7 +50,7 @@ class SAGE_Dist(torch.nn.Module):
 
         self.conv_layers = torch.nn.ModuleList()
         self.conv_layers.append(SAGEConv(in_channels, hidden_channels, aggr='mean'))         # first layer
-        for _ in range(num_layers - 2):
+        for _ in range(num_layers-2):
             self.conv_layers.append(SAGEConv(hidden_channels, hidden_channels, aggr='mean')) # hidden layers
         self.conv_layers.append(SAGEConv(hidden_channels, out_channels, aggr='mean'))        # last layer
 
@@ -86,12 +86,14 @@ class SAGE_Dist(torch.nn.Module):
 
 
 def run(local_rank, dataset, logger, args):
-    r"""Train GraphSAGE in Distributed Data Parallel (DDP) Manner."""
+    r"""Train GraphSAGE in Distributed Data Parallel (DDP) manner."""
 
     global_rank = args.node_id * args.nprocs + local_rank
 
-    dist.init_process_group(backend="nccl", rank=global_rank, world_size=args.world_size, init_method=f"tcp://{os.environ['MASTER_ADDR']}:{os.environ['MASTER_PORT']}")
-
+    dist.init_process_group(backend="nccl",
+                            rank=global_rank,
+                            world_size=args.world_size,
+                            init_method=f"tcp://{os.environ['MASTER_ADDR']}:{os.environ['MASTER_PORT']}")
     data = dataset[0]
 
     # Send node features and labels to device for faster access during sampling.
@@ -147,7 +149,7 @@ def run(local_rank, dataset, logger, args):
     model = DistributedDataParallel(model, device_ids=[local_rank])
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
-    batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_allocated'])
+    batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_usage'])
     acc_history = pd.DataFrame(columns=['epoch', 'train_acc', 'valid_acc', 'test_acc'])
     log_dir = '../logs/'
 
@@ -163,10 +165,9 @@ def run(local_rank, dataset, logger, args):
             start_time.record()
             optimizer.zero_grad()
 
-            before_alloc = torch.cuda.memory_allocated(local_rank)
             y = batch.y[:batch.batch_size]
             y_hat = model(batch.x, batch.edge_index.to(local_rank))[:batch.batch_size]
-            after_alloc = torch.cuda.memory_allocated(local_rank)
+            mem_usage = torch.cuda.memory_allocated(local_rank)
 
             loss = F.cross_entropy(y_hat, y)
             loss.backward()
@@ -175,8 +176,8 @@ def run(local_rank, dataset, logger, args):
             end_time.record()
             torch.cuda.synchronize()
             elapsed_time = start_time.elapsed_time(end_time) / 1000.0
-            mem_allocaated = (after_alloc - before_alloc) / (1024.0 * 1024.0)
-            batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_allocaated]
+            mem_usage /= 1024.0 * 1024.0
+            batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_usage]
 
         logger.info(f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} Epoch: {epoch:03d}, GPU: {local_rank}, Loss: {loss:.4f}")
 
