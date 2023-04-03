@@ -14,7 +14,7 @@ The below links for each system refers to its repository.
 ### Graph data
 
 - [x] Reddit
-- [x] Ogbn-Products
+- [ ] Ogbn-Products
 - [ ] Ogbn-Papers
 
 ### Single machine systems
