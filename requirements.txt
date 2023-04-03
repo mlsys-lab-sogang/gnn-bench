@@ -2,6 +2,7 @@ numpy
 pandas
 scikit-learn
 tqdm
+pynvml
 ogb==1.3.5
 # torch==1.12.0+cu113
 # pyg-lib==0.1.0+pt112cu113
