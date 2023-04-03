@@ -167,7 +167,7 @@ def run(local_rank, dataset, logger, args):
 
             y = batch.y[:batch.batch_size]
             y_hat = model(batch.x, batch.edge_index.to(local_rank))[:batch.batch_size]
-            mem_usage = torch.cuda.memory_allocated(local_rank)
+            mem_usage = torch.cuda.memory_usage(local_rank)
 
             loss = F.cross_entropy(y_hat, y)
             loss.backward()
