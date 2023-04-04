@@ -167,7 +167,7 @@ def run(local_rank, dataset, logger, args):
 
             y = batch.y[:batch.batch_size]
             y_hat = model(batch.x, batch.edge_index.to(local_rank))[:batch.batch_size]
-            mem_usage = torch.cuda.memory_usage(local_rank)
+            mem_usage = torch.cuda.max_memory_allocated(local_rank)
 
             loss = F.cross_entropy(y_hat, y)
             loss.backward()
@@ -176,7 +176,7 @@ def run(local_rank, dataset, logger, args):
             end_time.record()
             torch.cuda.synchronize()
             elapsed_time = start_time.elapsed_time(end_time) / 1000.0
-            mem_usage /= 1024.0 * 1024.0
+            mem_usage /= 2.0 ** 20
             batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_usage]
 
         logger.info(f"{datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')} Epoch: {epoch:03d}, GPU: {local_rank}, Loss: {loss:.4f}")
