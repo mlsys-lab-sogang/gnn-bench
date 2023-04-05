@@ -143,10 +143,12 @@ def run(local_rank, dataset, logger, args):
         hidden_channels = args.hidden_channels,
         out_channels = dataset.num_classes,
         num_layers = args.num_layers,
-        dropout = args.dropout
-    ).to(local_rank)
+        dropout = args.dropout)
 
+    model.load_state_dict(torch.load(f="../checkpoints/reddit_sage.pt"))
+    model = model.to(local_rank)
     model = DistributedDataParallel(model, device_ids=[local_rank])
+
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
     batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_usage'])
