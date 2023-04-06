@@ -2,6 +2,7 @@ FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
 
 RUN mkdir /logs/
 RUN mkdir /dataset/
+RUN mkdir /checkpoints/
 
 COPY ./pyg/ /pyg/
 COPY ./requirements.txt /
