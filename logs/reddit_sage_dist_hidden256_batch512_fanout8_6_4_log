@@ -1,0 +1,790 @@
+[INFO/MainProcess] [2023-04-06 06:13:36] Args: Namespace(batch_size=512, checkpoint='../checkpoints/reddit_sage.pt', dropout=0.3, epochs=50, fanout=[8, 6, 4], hidden_channels=256, lr=0.01, nnodes=2, node_id=0, nprocs=4, num_layers=3, world_size=8)
+[INFO/MainProcess] [2023-04-06 06:13:36] Using 8 GPUs
+[INFO/SpawnProcess-4] child process calling self.run()
+[INFO/SpawnProcess-2] child process calling self.run()
+[INFO/SpawnProcess-3] child process calling self.run()
+[INFO/SpawnProcess-1] child process calling self.run()
+[INFO/SpawnProcess-2] [2023-04-06 06:13:49] Start train on epoch 000
+[INFO/SpawnProcess-1] [2023-04-06 06:13:49] Start train on epoch 000
+[INFO/SpawnProcess-3] [2023-04-06 06:13:49] Start train on epoch 000
+[INFO/SpawnProcess-4] [2023-04-06 06:13:49] Start train on epoch 000
+[INFO/Process-2:3] child process calling self.run()
+[INFO/Process-3:4] child process calling self.run()
+[INFO/Process-4:2] child process calling self.run()
+[INFO/Process-2:2] child process calling self.run()
+[INFO/Process-1:6] child process calling self.run()
+[INFO/Process-1:1] child process calling self.run()
+[INFO/Process-2:3] created temp directory /tmp/pymp-zrwir34z
+[INFO/Process-2:2] created temp directory /tmp/pymp-tgws7xdx
+[INFO/Process-1:1] created temp directory /tmp/pymp-m3zfnzdr
+[INFO/Process-3:4] created temp directory /tmp/pymp-pxkwj8s9
+[INFO/Process-1:6] created temp directory /tmp/pymp-e0dblhfk
+[INFO/Process-1:2] child process calling self.run()
+[INFO/Process-4:2] created temp directory /tmp/pymp-rfhdx12k
+[INFO/Process-4:1] child process calling self.run()
+[INFO/Process-1:2] created temp directory /tmp/pymp-x42e2cfo
+[INFO/Process-4:1] created temp directory /tmp/pymp-1fnrwxxm
+[INFO/Process-3:2] child process calling self.run()
+[INFO/Process-3:2] created temp directory /tmp/pymp-g9kv8jfi
+[INFO/Process-3:3] child process calling self.run()
+[INFO/Process-3:6] child process calling self.run()
+[INFO/Process-3:3] created temp directory /tmp/pymp-k06f4t_1
+[INFO/Process-3:6] created temp directory /tmp/pymp-t9sllre4
+[INFO/Process-1:4] child process calling self.run()
+[INFO/Process-1:4] created temp directory /tmp/pymp-uw4wjgqv
+[INFO/Process-1:7] child process calling self.run()
+[INFO/Process-2:16] child process calling self.run()
+[INFO/Process-3:11] child process calling self.run()
+[INFO/Process-1:7] created temp directory /tmp/pymp-rsom9n3q
+[INFO/Process-2:16] created temp directory /tmp/pymp-heemb3xs
+[INFO/Process-3:11] created temp directory /tmp/pymp-chhcd38m
+[INFO/Process-1:10] child process calling self.run()
+[INFO/Process-1:3] child process calling self.run()
+[INFO/Process-2:1] child process calling self.run()
+[INFO/Process-1:10] created temp directory /tmp/pymp-9u91x214
+[INFO/Process-1:16] child process calling self.run()
+[INFO/Process-1:3] created temp directory /tmp/pymp-rxv9255w
+[INFO/Process-4:11] child process calling self.run()
+[INFO/Process-2:12] child process calling self.run()
+[INFO/Process-4:7] child process calling self.run()
+[INFO/Process-2:1] created temp directory /tmp/pymp-high2obh
+[INFO/Process-1:11] child process calling self.run()
+[INFO/Process-3:15] child process calling self.run()
+[INFO/Process-1:16] created temp directory /tmp/pymp-51kj_esn
+[INFO/Process-4:11] created temp directory /tmp/pymp-bjddhjbd
+[INFO/Process-4:7] created temp directory /tmp/pymp-ta41nroe
+[INFO/Process-2:12] created temp directory /tmp/pymp-ppqr4278
+[INFO/Process-2:4] child process calling self.run()
+[INFO/Process-2:14] child process calling self.run()
+[INFO/Process-4:14] child process calling self.run()
+[INFO/Process-1:11] created temp directory /tmp/pymp-c5w63bjd
+[INFO/Process-3:1] child process calling self.run()
+[INFO/Process-3:15] created temp directory /tmp/pymp-bt7l6n_x
+[INFO/Process-2:8] child process calling self.run()
+[INFO/Process-3:5] child process calling self.run()
+[INFO/Process-4:4] child process calling self.run()
+[INFO/Process-2:4] created temp directory /tmp/pymp-33z1ns0a
+[INFO/Process-3:16] child process calling self.run()
+[INFO/Process-2:14] created temp directory /tmp/pymp-nch59kev
+[INFO/Process-4:13] child process calling self.run()
+[INFO/Process-1:5] child process calling self.run()
+[INFO/Process-4:14] created temp directory /tmp/pymp-3pnev18q
+[INFO/Process-4:3] child process calling self.run()
+[INFO/Process-2:6] child process calling self.run()
+[INFO/Process-3:1] created temp directory /tmp/pymp-cpepj6sk
+[INFO/Process-4:6] child process calling self.run()
+[INFO/Process-3:12] child process calling self.run()
+[INFO/Process-2:9] child process calling self.run()
+[INFO/Process-2:8] created temp directory /tmp/pymp-wfpx5mi3
+[INFO/Process-3:5] created temp directory /tmp/pymp-z9df_9lv
+[INFO/Process-4:4] created temp directory /tmp/pymp-4caf6a5m
+[INFO/Process-4:5] child process calling self.run()
+[INFO/Process-3:16] created temp directory /tmp/pymp-v9ugbvjd
+[INFO/Process-4:13] created temp directory /tmp/pymp-r3rjq7gn
+[INFO/Process-1:5] created temp directory /tmp/pymp-stli68g_
+[INFO/Process-4:3] created temp directory /tmp/pymp-8iruljaq
+[INFO/Process-2:6] created temp directory /tmp/pymp-fl52nxap
+[INFO/Process-3:12] created temp directory /tmp/pymp-urvkx7qo
+[INFO/Process-2:9] created temp directory /tmp/pymp-z2jwpzfv
+[INFO/Process-4:6] created temp directory /tmp/pymp-28lcooe8
+[INFO/Process-4:12] child process calling self.run()
+[INFO/Process-2:7] child process calling self.run()
+[INFO/Process-4:5] created temp directory /tmp/pymp-9ydfm3t0
+[INFO/Process-3:14] child process calling self.run()
+[INFO/Process-1:8] child process calling self.run()
+[INFO/Process-3:8] child process calling self.run()
+[INFO/Process-1:9] child process calling self.run()
+[INFO/Process-4:9] child process calling self.run()
+[INFO/Process-3:13] child process calling self.run()
+[INFO/Process-4:16] child process calling self.run()
+[INFO/Process-2:11] child process calling self.run()
+[INFO/Process-1:12] child process calling self.run()
+[INFO/Process-4:12] created temp directory /tmp/pymp-cmyn_cy_
+[INFO/Process-1:13] child process calling self.run()
+[INFO/Process-4:10] child process calling self.run()
+[INFO/Process-3:9] child process calling self.run()
+[INFO/Process-4:15] child process calling self.run()
+[INFO/Process-2:7] created temp directory /tmp/pymp-mx5zqmx7
+[INFO/Process-2:10] child process calling self.run()
+[INFO/Process-4:8] child process calling self.run()
+[INFO/Process-1:15] child process calling self.run()
+[INFO/Process-3:14] created temp directory /tmp/pymp-oek9ygwe
+[INFO/Process-1:8] created temp directory /tmp/pymp-457dnrm3
+[INFO/Process-3:8] created temp directory /tmp/pymp-bt9_20nm
+[INFO/Process-3:7] child process calling self.run()
+[INFO/Process-1:14] child process calling self.run()
+[INFO/Process-1:9] created temp directory /tmp/pymp-kba7vqa4
+[INFO/Process-4:9] created temp directory /tmp/pymp-r0eofhwi
+[INFO/Process-3:13] created temp directory /tmp/pymp-vp6a7f_s
+[INFO/Process-2:5] child process calling self.run()
+[INFO/Process-2:13] child process calling self.run()
+[INFO/Process-3:10] child process calling self.run()
+[INFO/Process-2:15] child process calling self.run()
+[INFO/Process-2:11] created temp directory /tmp/pymp-ib4n3h7b
+[INFO/Process-1:12] created temp directory /tmp/pymp-hv5udtd0
+[INFO/Process-4:16] created temp directory /tmp/pymp-0m3q97_u
+[INFO/Process-4:10] created temp directory /tmp/pymp-vuxck8ka
+[INFO/Process-1:13] created temp directory /tmp/pymp-t8e4s48d
+[INFO/Process-1:15] created temp directory /tmp/pymp-6llh06t5
+[INFO/Process-3:9] created temp directory /tmp/pymp-vl_gbjfh
+[INFO/Process-4:15] created temp directory /tmp/pymp-81re77n3
+[INFO/Process-4:8] created temp directory /tmp/pymp-ycedkk6a
+[INFO/Process-2:10] created temp directory /tmp/pymp-8b64yrgr
+[INFO/Process-3:7] created temp directory /tmp/pymp-olwbld7v
+[INFO/Process-1:14] created temp directory /tmp/pymp-xtlqvnfn
+[INFO/Process-3:10] created temp directory /tmp/pymp-tfej5wy2
+[INFO/Process-2:13] created temp directory /tmp/pymp-oqrpn4zr
+[INFO/Process-2:5] created temp directory /tmp/pymp-8jh000b2
+[INFO/Process-2:15] created temp directory /tmp/pymp-8a_g6x0x
+[INFO/SpawnProcess-4] [2023-04-06 06:14:12] Epoch: 000, GPU: 3, Loss: 0.5277
+[INFO/SpawnProcess-2] [2023-04-06 06:14:12] Epoch: 000, GPU: 1, Loss: 0.5659
+[INFO/SpawnProcess-1] [2023-04-06 06:14:12] Epoch: 000, GPU: 0, Loss: 0.4906
+[INFO/SpawnProcess-3] [2023-04-06 06:14:12] Epoch: 000, GPU: 2, Loss: 0.4564
+[INFO/Process-1:17] child process calling self.run()
+[INFO/Process-1:18] child process calling self.run()
+[INFO/Process-1:17] created temp directory /tmp/pymp-wuzyq5yr
+[INFO/Process-1:19] child process calling self.run()
+[INFO/Process-1:18] created temp directory /tmp/pymp-8k0_r43i
+[INFO/Process-1:19] created temp directory /tmp/pymp-9cr9tssy
+[INFO/Process-1:20] child process calling self.run()
+[INFO/Process-1:21] child process calling self.run()
+[INFO/Process-1:21] created temp directory /tmp/pymp-uauawd4i
+[INFO/Process-1:20] created temp directory /tmp/pymp-ggz8ts44
+[INFO/Process-1:22] child process calling self.run()
+[INFO/Process-1:23] child process calling self.run()
+[INFO/Process-1:23] created temp directory /tmp/pymp-q52oinyp
+[INFO/Process-1:22] created temp directory /tmp/pymp-ghzvo_bs
+[INFO/Process-1:25] child process calling self.run()
+[INFO/Process-1:24] child process calling self.run()
+[INFO/Process-1:25] created temp directory /tmp/pymp-b2nf_9h0
+[INFO/Process-1:26] child process calling self.run()
+[INFO/Process-1:24] created temp directory /tmp/pymp-3zc55q_p
+[INFO/Process-1:26] created temp directory /tmp/pymp-wmw76on9
+[INFO/Process-1:31] child process calling self.run()
+[INFO/Process-1:27] child process calling self.run()
+[INFO/Process-1:31] created temp directory /tmp/pymp-q3wptc5z
+[INFO/Process-1:28] child process calling self.run()
+[INFO/Process-1:32] child process calling self.run()
+[INFO/Process-1:29] child process calling self.run()
+[INFO/Process-1:27] created temp directory /tmp/pymp-lon2n0n4
+[INFO/Process-1:29] created temp directory /tmp/pymp-92zmtw2f
+[INFO/Process-1:32] created temp directory /tmp/pymp-o2iat11g
+[INFO/Process-1:28] created temp directory /tmp/pymp-z1t6lklo
+[INFO/Process-1:30] child process calling self.run()
+[INFO/Process-1:30] created temp directory /tmp/pymp-_7yl4q_g
+[INFO/SpawnProcess-1] [2023-04-06 06:15:20] Epoch: 000, GPU: 0, Train Acc: 0.9309, Val Acc: 0.9373, Test Acc: 0.9361, Inference Time: 67.94003906s
+[INFO/SpawnProcess-1] [2023-04-06 06:15:20] Start train on epoch 001
+[INFO/SpawnProcess-2] [2023-04-06 06:15:20] Start train on epoch 001
+[INFO/SpawnProcess-3] [2023-04-06 06:15:20] Start train on epoch 001
+[INFO/SpawnProcess-4] [2023-04-06 06:15:20] Start train on epoch 001
+[INFO/SpawnProcess-1] [2023-04-06 06:15:23] Epoch: 001, GPU: 0, Loss: 0.3527
+[INFO/SpawnProcess-3] [2023-04-06 06:15:23] Epoch: 001, GPU: 2, Loss: 0.2125
+[INFO/SpawnProcess-4] [2023-04-06 06:15:23] Epoch: 001, GPU: 3, Loss: 0.3060
+[INFO/SpawnProcess-2] [2023-04-06 06:15:23] Epoch: 001, GPU: 1, Loss: 0.3756
+[INFO/SpawnProcess-1] [2023-04-06 06:16:28] Epoch: 001, GPU: 0, Train Acc: 0.9504, Val Acc: 0.9536, Test Acc: 0.9526, Inference Time: 64.33478516s
+[INFO/SpawnProcess-1] [2023-04-06 06:16:28] Start train on epoch 002
+[INFO/SpawnProcess-2] [2023-04-06 06:16:28] Start train on epoch 002
+[INFO/SpawnProcess-4] [2023-04-06 06:16:28] Start train on epoch 002
+[INFO/SpawnProcess-3] [2023-04-06 06:16:28] Start train on epoch 002
+[INFO/SpawnProcess-2] [2023-04-06 06:16:31] Epoch: 002, GPU: 1, Loss: 0.2290
+[INFO/SpawnProcess-3] [2023-04-06 06:16:31] Epoch: 002, GPU: 2, Loss: 0.2679
+[INFO/SpawnProcess-4] [2023-04-06 06:16:31] Epoch: 002, GPU: 3, Loss: 0.2515
+[INFO/SpawnProcess-1] [2023-04-06 06:16:31] Epoch: 002, GPU: 0, Loss: 0.2704
+[INFO/SpawnProcess-1] [2023-04-06 06:17:35] Epoch: 002, GPU: 0, Train Acc: 0.9571, Val Acc: 0.9571, Test Acc: 0.9552, Inference Time: 63.89541406s
+[INFO/SpawnProcess-1] [2023-04-06 06:17:35] Start train on epoch 003
+[INFO/SpawnProcess-2] [2023-04-06 06:17:35] Start train on epoch 003
+[INFO/SpawnProcess-3] [2023-04-06 06:17:35] Start train on epoch 003
+[INFO/SpawnProcess-4] [2023-04-06 06:17:35] Start train on epoch 003
+[INFO/SpawnProcess-4] [2023-04-06 06:17:38] Epoch: 003, GPU: 3, Loss: 0.2194
+[INFO/SpawnProcess-3] [2023-04-06 06:17:38] Epoch: 003, GPU: 2, Loss: 0.3432
+[INFO/SpawnProcess-1] [2023-04-06 06:17:38] Epoch: 003, GPU: 0, Loss: 0.2933
+[INFO/SpawnProcess-2] [2023-04-06 06:17:38] Epoch: 003, GPU: 1, Loss: 0.2792
+[INFO/SpawnProcess-1] [2023-04-06 06:18:49] Epoch: 003, GPU: 0, Train Acc: 0.9622, Val Acc: 0.9609, Test Acc: 0.9594, Inference Time: 70.15528125s
+[INFO/SpawnProcess-1] [2023-04-06 06:18:49] Start train on epoch 004
+[INFO/SpawnProcess-2] [2023-04-06 06:18:49] Start train on epoch 004
+[INFO/SpawnProcess-4] [2023-04-06 06:18:49] Start train on epoch 004
+[INFO/SpawnProcess-3] [2023-04-06 06:18:49] Start train on epoch 004
+[INFO/SpawnProcess-4] [2023-04-06 06:18:52] Epoch: 004, GPU: 3, Loss: 0.2026
+[INFO/SpawnProcess-3] [2023-04-06 06:18:52] Epoch: 004, GPU: 2, Loss: 0.2269
+[INFO/SpawnProcess-2] [2023-04-06 06:18:52] Epoch: 004, GPU: 1, Loss: 0.2518
+[INFO/SpawnProcess-1] [2023-04-06 06:18:52] Epoch: 004, GPU: 0, Loss: 0.1738
+[INFO/SpawnProcess-1] [2023-04-06 06:20:01] Epoch: 004, GPU: 0, Train Acc: 0.9649, Val Acc: 0.9603, Test Acc: 0.9599, Inference Time: 68.43680469s
+[INFO/SpawnProcess-1] [2023-04-06 06:20:01] Start train on epoch 005
+[INFO/SpawnProcess-3] [2023-04-06 06:20:01] Start train on epoch 005
+[INFO/SpawnProcess-4] [2023-04-06 06:20:01] Start train on epoch 005
+[INFO/SpawnProcess-2] [2023-04-06 06:20:01] Start train on epoch 005
+[INFO/SpawnProcess-3] [2023-04-06 06:20:04] Epoch: 005, GPU: 2, Loss: 0.1502
+[INFO/SpawnProcess-2] [2023-04-06 06:20:04] Epoch: 005, GPU: 1, Loss: 0.2499
+[INFO/SpawnProcess-4] [2023-04-06 06:20:04] Epoch: 005, GPU: 3, Loss: 0.2089
+[INFO/SpawnProcess-1] [2023-04-06 06:20:04] Epoch: 005, GPU: 0, Loss: 0.2141
+[INFO/SpawnProcess-1] [2023-04-06 06:21:16] Epoch: 005, GPU: 0, Train Acc: 0.9675, Val Acc: 0.9606, Test Acc: 0.9609, Inference Time: 71.88789844s
+[INFO/SpawnProcess-1] [2023-04-06 06:21:16] Start train on epoch 006
+[INFO/SpawnProcess-2] [2023-04-06 06:21:16] Start train on epoch 006
+[INFO/SpawnProcess-3] [2023-04-06 06:21:16] Start train on epoch 006
+[INFO/SpawnProcess-4] [2023-04-06 06:21:16] Start train on epoch 006
+[INFO/SpawnProcess-2] [2023-04-06 06:21:19] Epoch: 006, GPU: 1, Loss: 0.1571
+[INFO/SpawnProcess-3] [2023-04-06 06:21:19] Epoch: 006, GPU: 2, Loss: 0.1862
+[INFO/SpawnProcess-1] [2023-04-06 06:21:20] Epoch: 006, GPU: 0, Loss: 0.2024
+[INFO/SpawnProcess-4] [2023-04-06 06:21:20] Epoch: 006, GPU: 3, Loss: 0.2046
+[INFO/SpawnProcess-1] [2023-04-06 06:22:29] Epoch: 006, GPU: 0, Train Acc: 0.9686, Val Acc: 0.9614, Test Acc: 0.9609, Inference Time: 69.50538281s
+[INFO/SpawnProcess-1] [2023-04-06 06:22:29] Start train on epoch 007
+[INFO/SpawnProcess-2] [2023-04-06 06:22:29] Start train on epoch 007
+[INFO/SpawnProcess-3] [2023-04-06 06:22:29] Start train on epoch 007
+[INFO/SpawnProcess-4] [2023-04-06 06:22:29] Start train on epoch 007
+[INFO/SpawnProcess-4] [2023-04-06 06:22:33] Epoch: 007, GPU: 3, Loss: 0.1423
+[INFO/SpawnProcess-3] [2023-04-06 06:22:33] Epoch: 007, GPU: 2, Loss: 0.1963
+[INFO/SpawnProcess-2] [2023-04-06 06:22:33] Epoch: 007, GPU: 1, Loss: 0.1730
+[INFO/SpawnProcess-1] [2023-04-06 06:22:33] Epoch: 007, GPU: 0, Loss: 0.2417
+[INFO/SpawnProcess-1] [2023-04-06 06:23:44] Epoch: 007, GPU: 0, Train Acc: 0.9697, Val Acc: 0.9604, Test Acc: 0.9607, Inference Time: 71.39423437s
+[INFO/SpawnProcess-1] [2023-04-06 06:23:44] Start train on epoch 008
+[INFO/SpawnProcess-4] [2023-04-06 06:23:44] Start train on epoch 008
+[INFO/SpawnProcess-3] [2023-04-06 06:23:44] Start train on epoch 008
+[INFO/SpawnProcess-2] [2023-04-06 06:23:44] Start train on epoch 008
+[INFO/SpawnProcess-3] [2023-04-06 06:23:47] Epoch: 008, GPU: 2, Loss: 0.1654
+[INFO/SpawnProcess-4] [2023-04-06 06:23:47] Epoch: 008, GPU: 3, Loss: 0.1832
+[INFO/SpawnProcess-1] [2023-04-06 06:23:47] Epoch: 008, GPU: 0, Loss: 0.1697
+[INFO/SpawnProcess-2] [2023-04-06 06:23:47] Epoch: 008, GPU: 1, Loss: 0.2051
+[INFO/SpawnProcess-1] [2023-04-06 06:25:02] Epoch: 008, GPU: 0, Train Acc: 0.9711, Val Acc: 0.9618, Test Acc: 0.9610, Inference Time: 74.84475781s
+[INFO/SpawnProcess-1] [2023-04-06 06:25:02] Start train on epoch 009
+[INFO/SpawnProcess-2] [2023-04-06 06:25:02] Start train on epoch 009
+[INFO/SpawnProcess-3] [2023-04-06 06:25:02] Start train on epoch 009
+[INFO/SpawnProcess-4] [2023-04-06 06:25:02] Start train on epoch 009
+[INFO/SpawnProcess-3] [2023-04-06 06:25:06] Epoch: 009, GPU: 2, Loss: 0.1876
+[INFO/SpawnProcess-4] [2023-04-06 06:25:06] Epoch: 009, GPU: 3, Loss: 0.1753
+[INFO/SpawnProcess-1] [2023-04-06 06:25:06] Epoch: 009, GPU: 0, Loss: 0.1356
+[INFO/SpawnProcess-2] [2023-04-06 06:25:06] Epoch: 009, GPU: 1, Loss: 0.1587
+[INFO/SpawnProcess-1] [2023-04-06 06:26:11] Epoch: 009, GPU: 0, Train Acc: 0.9721, Val Acc: 0.9615, Test Acc: 0.9610, Inference Time: 65.13219531s
+[INFO/SpawnProcess-1] [2023-04-06 06:26:11] Start train on epoch 010
+[INFO/SpawnProcess-2] [2023-04-06 06:26:11] Start train on epoch 010
+[INFO/SpawnProcess-3] [2023-04-06 06:26:11] Start train on epoch 010
+[INFO/SpawnProcess-4] [2023-04-06 06:26:11] Start train on epoch 010
+[INFO/SpawnProcess-4] [2023-04-06 06:26:15] Epoch: 010, GPU: 3, Loss: 0.1286
+[INFO/SpawnProcess-3] [2023-04-06 06:26:15] Epoch: 010, GPU: 2, Loss: 0.1615
+[INFO/SpawnProcess-2] [2023-04-06 06:26:15] Epoch: 010, GPU: 1, Loss: 0.1211
+[INFO/SpawnProcess-1] [2023-04-06 06:26:15] Epoch: 010, GPU: 0, Loss: 0.1237
+[INFO/SpawnProcess-1] [2023-04-06 06:27:25] Epoch: 010, GPU: 0, Train Acc: 0.9731, Val Acc: 0.9611, Test Acc: 0.9609, Inference Time: 70.47579688s
+[INFO/SpawnProcess-1] [2023-04-06 06:27:25] Start train on epoch 011
+[INFO/SpawnProcess-4] [2023-04-06 06:27:25] Start train on epoch 011
+[INFO/SpawnProcess-3] [2023-04-06 06:27:25] Start train on epoch 011
+[INFO/SpawnProcess-2] [2023-04-06 06:27:25] Start train on epoch 011
+[INFO/SpawnProcess-3] [2023-04-06 06:27:28] Epoch: 011, GPU: 2, Loss: 0.1688
+[INFO/SpawnProcess-1] [2023-04-06 06:27:28] Epoch: 011, GPU: 0, Loss: 0.1761
+[INFO/SpawnProcess-4] [2023-04-06 06:27:28] Epoch: 011, GPU: 3, Loss: 0.1884
+[INFO/SpawnProcess-2] [2023-04-06 06:27:28] Epoch: 011, GPU: 1, Loss: 0.1533
+[INFO/SpawnProcess-1] [2023-04-06 06:28:41] Epoch: 011, GPU: 0, Train Acc: 0.9740, Val Acc: 0.9611, Test Acc: 0.9607, Inference Time: 72.36329688s
+[INFO/SpawnProcess-1] [2023-04-06 06:28:41] Start train on epoch 012
+[INFO/SpawnProcess-4] [2023-04-06 06:28:41] Start train on epoch 012
+[INFO/SpawnProcess-3] [2023-04-06 06:28:41] Start train on epoch 012
+[INFO/SpawnProcess-2] [2023-04-06 06:28:41] Start train on epoch 012
+[INFO/SpawnProcess-3] [2023-04-06 06:28:44] Epoch: 012, GPU: 2, Loss: 0.1703
+[INFO/SpawnProcess-2] [2023-04-06 06:28:44] Epoch: 012, GPU: 1, Loss: 0.1864
+[INFO/SpawnProcess-4] [2023-04-06 06:28:44] Epoch: 012, GPU: 3, Loss: 0.1588
+[INFO/SpawnProcess-1] [2023-04-06 06:28:44] Epoch: 012, GPU: 0, Loss: 0.1687
+[INFO/SpawnProcess-1] [2023-04-06 06:29:52] Epoch: 012, GPU: 0, Train Acc: 0.9737, Val Acc: 0.9608, Test Acc: 0.9606, Inference Time: 67.30901563s
+[INFO/SpawnProcess-1] [2023-04-06 06:29:52] Start train on epoch 013
+[INFO/SpawnProcess-3] [2023-04-06 06:29:52] Start train on epoch 013
+[INFO/SpawnProcess-2] [2023-04-06 06:29:52] Start train on epoch 013
+[INFO/SpawnProcess-4] [2023-04-06 06:29:52] Start train on epoch 013
+[INFO/SpawnProcess-4] [2023-04-06 06:29:55] Epoch: 013, GPU: 3, Loss: 0.1736
+[INFO/SpawnProcess-2] [2023-04-06 06:29:55] Epoch: 013, GPU: 1, Loss: 0.1513
+[INFO/SpawnProcess-3] [2023-04-06 06:29:55] Epoch: 013, GPU: 2, Loss: 0.1460
+[INFO/SpawnProcess-1] [2023-04-06 06:29:55] Epoch: 013, GPU: 0, Loss: 0.1565
+[INFO/SpawnProcess-1] [2023-04-06 06:31:07] Epoch: 013, GPU: 0, Train Acc: 0.9730, Val Acc: 0.9602, Test Acc: 0.9593, Inference Time: 71.42825000s
+[INFO/SpawnProcess-1] [2023-04-06 06:31:07] Start train on epoch 014
+[INFO/SpawnProcess-3] [2023-04-06 06:31:07] Start train on epoch 014
+[INFO/SpawnProcess-4] [2023-04-06 06:31:07] Start train on epoch 014
+[INFO/SpawnProcess-2] [2023-04-06 06:31:07] Start train on epoch 014
+[INFO/SpawnProcess-2] [2023-04-06 06:31:10] Epoch: 014, GPU: 1, Loss: 0.1451
+[INFO/SpawnProcess-3] [2023-04-06 06:31:10] Epoch: 014, GPU: 2, Loss: 0.1879
+[INFO/SpawnProcess-4] [2023-04-06 06:31:10] Epoch: 014, GPU: 3, Loss: 0.1780
+[INFO/SpawnProcess-1] [2023-04-06 06:31:10] Epoch: 014, GPU: 0, Loss: 0.1854
+[INFO/SpawnProcess-1] [2023-04-06 06:32:22] Epoch: 014, GPU: 0, Train Acc: 0.9744, Val Acc: 0.9606, Test Acc: 0.9615, Inference Time: 71.82435938s
+[INFO/SpawnProcess-1] [2023-04-06 06:32:22] Start train on epoch 015
+[INFO/SpawnProcess-2] [2023-04-06 06:32:22] Start train on epoch 015
+[INFO/SpawnProcess-4] [2023-04-06 06:32:22] Start train on epoch 015
+[INFO/SpawnProcess-3] [2023-04-06 06:32:22] Start train on epoch 015
+[INFO/SpawnProcess-3] [2023-04-06 06:32:25] Epoch: 015, GPU: 2, Loss: 0.1326
+[INFO/SpawnProcess-1] [2023-04-06 06:32:25] Epoch: 015, GPU: 0, Loss: 0.1448
+[INFO/SpawnProcess-4] [2023-04-06 06:32:25] Epoch: 015, GPU: 3, Loss: 0.1514
+[INFO/SpawnProcess-2] [2023-04-06 06:32:25] Epoch: 015, GPU: 1, Loss: 0.1583
+[INFO/SpawnProcess-1] [2023-04-06 06:33:32] Epoch: 015, GPU: 0, Train Acc: 0.9744, Val Acc: 0.9604, Test Acc: 0.9594, Inference Time: 66.22564844s
+[INFO/SpawnProcess-1] [2023-04-06 06:33:32] Start train on epoch 016
+[INFO/SpawnProcess-3] [2023-04-06 06:33:32] Start train on epoch 016
+[INFO/SpawnProcess-4] [2023-04-06 06:33:32] Start train on epoch 016
+[INFO/SpawnProcess-2] [2023-04-06 06:33:32] Start train on epoch 016
+[INFO/SpawnProcess-4] [2023-04-06 06:33:35] Epoch: 016, GPU: 3, Loss: 0.1093
+[INFO/SpawnProcess-3] [2023-04-06 06:33:35] Epoch: 016, GPU: 2, Loss: 0.1322
+[INFO/SpawnProcess-2] [2023-04-06 06:33:35] Epoch: 016, GPU: 1, Loss: 0.1159
+[INFO/SpawnProcess-1] [2023-04-06 06:33:35] Epoch: 016, GPU: 0, Loss: 0.1849
+[INFO/SpawnProcess-1] [2023-04-06 06:34:49] Epoch: 016, GPU: 0, Train Acc: 0.9749, Val Acc: 0.9607, Test Acc: 0.9603, Inference Time: 73.93620313s
+[INFO/SpawnProcess-1] [2023-04-06 06:34:49] Start train on epoch 017
+[INFO/SpawnProcess-2] [2023-04-06 06:34:49] Start train on epoch 017
+[INFO/SpawnProcess-4] [2023-04-06 06:34:49] Start train on epoch 017
+[INFO/SpawnProcess-3] [2023-04-06 06:34:49] Start train on epoch 017
+[INFO/SpawnProcess-3] [2023-04-06 06:34:52] Epoch: 017, GPU: 2, Loss: 0.1533
+[INFO/SpawnProcess-1] [2023-04-06 06:34:52] Epoch: 017, GPU: 0, Loss: 0.1168
+[INFO/SpawnProcess-4] [2023-04-06 06:34:52] Epoch: 017, GPU: 3, Loss: 0.1331
+[INFO/SpawnProcess-2] [2023-04-06 06:34:52] Epoch: 017, GPU: 1, Loss: 0.1523
+[INFO/SpawnProcess-1] [2023-04-06 06:36:03] Epoch: 017, GPU: 0, Train Acc: 0.9748, Val Acc: 0.9600, Test Acc: 0.9595, Inference Time: 70.14423437s
+[INFO/SpawnProcess-1] [2023-04-06 06:36:03] Start train on epoch 018
+[INFO/SpawnProcess-3] [2023-04-06 06:36:03] Start train on epoch 018
+[INFO/SpawnProcess-4] [2023-04-06 06:36:03] Start train on epoch 018
+[INFO/SpawnProcess-2] [2023-04-06 06:36:03] Start train on epoch 018
+[INFO/SpawnProcess-3] [2023-04-06 06:36:06] Epoch: 018, GPU: 2, Loss: 0.1692
+[INFO/SpawnProcess-4] [2023-04-06 06:36:06] Epoch: 018, GPU: 3, Loss: 0.0824
+[INFO/SpawnProcess-2] [2023-04-06 06:36:06] Epoch: 018, GPU: 1, Loss: 0.1325
+[INFO/SpawnProcess-1] [2023-04-06 06:36:06] Epoch: 018, GPU: 0, Loss: 0.1447
+[INFO/SpawnProcess-1] [2023-04-06 06:37:11] Epoch: 018, GPU: 0, Train Acc: 0.9752, Val Acc: 0.9608, Test Acc: 0.9613, Inference Time: 65.23541406s
+[INFO/SpawnProcess-1] [2023-04-06 06:37:11] Start train on epoch 019
+[INFO/SpawnProcess-2] [2023-04-06 06:37:11] Start train on epoch 019
+[INFO/SpawnProcess-3] [2023-04-06 06:37:11] Start train on epoch 019
+[INFO/SpawnProcess-4] [2023-04-06 06:37:11] Start train on epoch 019
+[INFO/SpawnProcess-3] [2023-04-06 06:37:15] Epoch: 019, GPU: 2, Loss: 0.1037
+[INFO/SpawnProcess-1] [2023-04-06 06:37:15] Epoch: 019, GPU: 0, Loss: 0.1140
+[INFO/SpawnProcess-4] [2023-04-06 06:37:15] Epoch: 019, GPU: 3, Loss: 0.1123
+[INFO/SpawnProcess-2] [2023-04-06 06:37:15] Epoch: 019, GPU: 1, Loss: 0.1480
+[INFO/SpawnProcess-1] [2023-04-06 06:38:26] Epoch: 019, GPU: 0, Train Acc: 0.9746, Val Acc: 0.9596, Test Acc: 0.9596, Inference Time: 71.49620312s
+[INFO/SpawnProcess-1] [2023-04-06 06:38:26] Start train on epoch 020
+[INFO/SpawnProcess-3] [2023-04-06 06:38:26] Start train on epoch 020
+[INFO/SpawnProcess-4] [2023-04-06 06:38:26] Start train on epoch 020
+[INFO/SpawnProcess-2] [2023-04-06 06:38:26] Start train on epoch 020
+[INFO/SpawnProcess-4] [2023-04-06 06:38:29] Epoch: 020, GPU: 3, Loss: 0.0897
+[INFO/SpawnProcess-2] [2023-04-06 06:38:29] Epoch: 020, GPU: 1, Loss: 0.1294
+[INFO/SpawnProcess-3] [2023-04-06 06:38:29] Epoch: 020, GPU: 2, Loss: 0.1116
+[INFO/SpawnProcess-1] [2023-04-06 06:38:29] Epoch: 020, GPU: 0, Loss: 0.1355
+[INFO/SpawnProcess-1] [2023-04-06 06:39:39] Epoch: 020, GPU: 0, Train Acc: 0.9759, Val Acc: 0.9608, Test Acc: 0.9611, Inference Time: 69.32600000s
+[INFO/SpawnProcess-1] [2023-04-06 06:39:39] Start train on epoch 021
+[INFO/SpawnProcess-4] [2023-04-06 06:39:39] Start train on epoch 021
+[INFO/SpawnProcess-2] [2023-04-06 06:39:39] Start train on epoch 021
+[INFO/SpawnProcess-3] [2023-04-06 06:39:39] Start train on epoch 021
+[INFO/SpawnProcess-3] [2023-04-06 06:39:42] Epoch: 021, GPU: 2, Loss: 0.1108
+[INFO/SpawnProcess-2] [2023-04-06 06:39:42] Epoch: 021, GPU: 1, Loss: 0.0751
+[INFO/SpawnProcess-1] [2023-04-06 06:39:42] Epoch: 021, GPU: 0, Loss: 0.1288
+[INFO/SpawnProcess-4] [2023-04-06 06:39:42] Epoch: 021, GPU: 3, Loss: 0.1465
+[INFO/SpawnProcess-1] [2023-04-06 06:40:48] Epoch: 021, GPU: 0, Train Acc: 0.9758, Val Acc: 0.9598, Test Acc: 0.9610, Inference Time: 65.73171094s
+[INFO/SpawnProcess-1] [2023-04-06 06:40:48] Start train on epoch 022
+[INFO/SpawnProcess-4] [2023-04-06 06:40:48] Start train on epoch 022
+[INFO/SpawnProcess-2] [2023-04-06 06:40:48] Start train on epoch 022
+[INFO/SpawnProcess-3] [2023-04-06 06:40:48] Start train on epoch 022
+[INFO/SpawnProcess-4] [2023-04-06 06:40:52] Epoch: 022, GPU: 3, Loss: 0.1372
+[INFO/SpawnProcess-3] [2023-04-06 06:40:52] Epoch: 022, GPU: 2, Loss: 0.1517
+[INFO/SpawnProcess-2] [2023-04-06 06:40:52] Epoch: 022, GPU: 1, Loss: 0.0775
+[INFO/SpawnProcess-1] [2023-04-06 06:40:52] Epoch: 022, GPU: 0, Loss: 0.1072
+[INFO/SpawnProcess-1] [2023-04-06 06:41:58] Epoch: 022, GPU: 0, Train Acc: 0.9759, Val Acc: 0.9595, Test Acc: 0.9601, Inference Time: 66.64591406s
+[INFO/SpawnProcess-1] [2023-04-06 06:41:58] Start train on epoch 023
+[INFO/SpawnProcess-2] [2023-04-06 06:41:58] Start train on epoch 023
+[INFO/SpawnProcess-3] [2023-04-06 06:41:58] Start train on epoch 023
+[INFO/SpawnProcess-4] [2023-04-06 06:41:58] Start train on epoch 023
+[INFO/SpawnProcess-2] [2023-04-06 06:42:02] Epoch: 023, GPU: 1, Loss: 0.1261
+[INFO/SpawnProcess-4] [2023-04-06 06:42:02] Epoch: 023, GPU: 3, Loss: 0.1046
+[INFO/SpawnProcess-3] [2023-04-06 06:42:02] Epoch: 023, GPU: 2, Loss: 0.0982
+[INFO/SpawnProcess-1] [2023-04-06 06:42:02] Epoch: 023, GPU: 0, Loss: 0.1354
+[INFO/SpawnProcess-1] [2023-04-06 06:43:13] Epoch: 023, GPU: 0, Train Acc: 0.9759, Val Acc: 0.9601, Test Acc: 0.9599, Inference Time: 71.50550000s
+[INFO/SpawnProcess-1] [2023-04-06 06:43:13] Start train on epoch 024
+[INFO/SpawnProcess-2] [2023-04-06 06:43:13] Start train on epoch 024
+[INFO/SpawnProcess-3] [2023-04-06 06:43:13] Start train on epoch 024
+[INFO/SpawnProcess-4] [2023-04-06 06:43:13] Start train on epoch 024
+[INFO/SpawnProcess-3] [2023-04-06 06:43:17] Epoch: 024, GPU: 2, Loss: 0.1490
+[INFO/SpawnProcess-2] [2023-04-06 06:43:17] Epoch: 024, GPU: 1, Loss: 0.1227
+[INFO/SpawnProcess-4] [2023-04-06 06:43:17] Epoch: 024, GPU: 3, Loss: 0.1418
+[INFO/SpawnProcess-1] [2023-04-06 06:43:17] Epoch: 024, GPU: 0, Loss: 0.1581
+[INFO/SpawnProcess-1] [2023-04-06 06:44:30] Epoch: 024, GPU: 0, Train Acc: 0.9756, Val Acc: 0.9596, Test Acc: 0.9597, Inference Time: 72.96329687s
+[INFO/SpawnProcess-1] [2023-04-06 06:44:30] Start train on epoch 025
+[INFO/SpawnProcess-2] [2023-04-06 06:44:30] Start train on epoch 025
+[INFO/SpawnProcess-3] [2023-04-06 06:44:30] Start train on epoch 025
+[INFO/SpawnProcess-4] [2023-04-06 06:44:30] Start train on epoch 025
+[INFO/SpawnProcess-3] [2023-04-06 06:44:33] Epoch: 025, GPU: 2, Loss: 0.2059
+[INFO/SpawnProcess-2] [2023-04-06 06:44:33] Epoch: 025, GPU: 1, Loss: 0.0935
+[INFO/SpawnProcess-4] [2023-04-06 06:44:33] Epoch: 025, GPU: 3, Loss: 0.1286
+[INFO/SpawnProcess-1] [2023-04-06 06:44:33] Epoch: 025, GPU: 0, Loss: 0.1900
+[INFO/SpawnProcess-1] [2023-04-06 06:45:44] Epoch: 025, GPU: 0, Train Acc: 0.9760, Val Acc: 0.9599, Test Acc: 0.9607, Inference Time: 70.62264063s
+[INFO/SpawnProcess-1] [2023-04-06 06:45:44] Start train on epoch 026
+[INFO/SpawnProcess-4] [2023-04-06 06:45:44] Start train on epoch 026
+[INFO/SpawnProcess-3] [2023-04-06 06:45:44] Start train on epoch 026
+[INFO/SpawnProcess-2] [2023-04-06 06:45:44] Start train on epoch 026
+[INFO/SpawnProcess-3] [2023-04-06 06:45:47] Epoch: 026, GPU: 2, Loss: 0.1094
+[INFO/SpawnProcess-2] [2023-04-06 06:45:47] Epoch: 026, GPU: 1, Loss: 0.0983
+[INFO/SpawnProcess-1] [2023-04-06 06:45:48] Epoch: 026, GPU: 0, Loss: 0.1195
+[INFO/SpawnProcess-4] [2023-04-06 06:45:47] Epoch: 026, GPU: 3, Loss: 0.0958
+[INFO/SpawnProcess-1] [2023-04-06 06:47:00] Epoch: 026, GPU: 0, Train Acc: 0.9756, Val Acc: 0.9588, Test Acc: 0.9586, Inference Time: 72.41404687s
+[INFO/SpawnProcess-1] [2023-04-06 06:47:00] Start train on epoch 027
+[INFO/SpawnProcess-3] [2023-04-06 06:47:00] Start train on epoch 027
+[INFO/SpawnProcess-2] [2023-04-06 06:47:00] Start train on epoch 027
+[INFO/SpawnProcess-4] [2023-04-06 06:47:00] Start train on epoch 027
+[INFO/SpawnProcess-4] [2023-04-06 06:47:03] Epoch: 027, GPU: 3, Loss: 0.0822
+[INFO/SpawnProcess-2] [2023-04-06 06:47:03] Epoch: 027, GPU: 1, Loss: 0.1119
+[INFO/SpawnProcess-3] [2023-04-06 06:47:03] Epoch: 027, GPU: 2, Loss: 0.1775
+[INFO/SpawnProcess-1] [2023-04-06 06:47:04] Epoch: 027, GPU: 0, Loss: 0.0895
+[INFO/SpawnProcess-1] [2023-04-06 06:48:11] Epoch: 027, GPU: 0, Train Acc: 0.9761, Val Acc: 0.9591, Test Acc: 0.9595, Inference Time: 67.70172656s
+[INFO/SpawnProcess-1] [2023-04-06 06:48:11] Start train on epoch 028
+[INFO/SpawnProcess-4] [2023-04-06 06:48:11] Start train on epoch 028
+[INFO/SpawnProcess-2] [2023-04-06 06:48:11] Start train on epoch 028
+[INFO/SpawnProcess-3] [2023-04-06 06:48:11] Start train on epoch 028
+[INFO/SpawnProcess-2] [2023-04-06 06:48:14] Epoch: 028, GPU: 1, Loss: 0.0975
+[INFO/SpawnProcess-3] [2023-04-06 06:48:14] Epoch: 028, GPU: 2, Loss: 0.1524
+[INFO/SpawnProcess-1] [2023-04-06 06:48:15] Epoch: 028, GPU: 0, Loss: 0.1845
+[INFO/SpawnProcess-4] [2023-04-06 06:48:14] Epoch: 028, GPU: 3, Loss: 0.1618
+[INFO/SpawnProcess-1] [2023-04-06 06:49:25] Epoch: 028, GPU: 0, Train Acc: 0.9752, Val Acc: 0.9588, Test Acc: 0.9593, Inference Time: 70.24513281s
+[INFO/SpawnProcess-1] [2023-04-06 06:49:25] Start train on epoch 029
+[INFO/SpawnProcess-3] [2023-04-06 06:49:25] Start train on epoch 029
+[INFO/SpawnProcess-2] [2023-04-06 06:49:25] Start train on epoch 029
+[INFO/SpawnProcess-4] [2023-04-06 06:49:25] Start train on epoch 029
+[INFO/SpawnProcess-4] [2023-04-06 06:49:28] Epoch: 029, GPU: 3, Loss: 0.1056
+[INFO/SpawnProcess-3] [2023-04-06 06:49:28] Epoch: 029, GPU: 2, Loss: 0.0922
+[INFO/SpawnProcess-1] [2023-04-06 06:49:28] Epoch: 029, GPU: 0, Loss: 0.1208
+[INFO/SpawnProcess-2] [2023-04-06 06:49:28] Epoch: 029, GPU: 1, Loss: 0.1122
+[INFO/SpawnProcess-1] [2023-04-06 06:50:40] Epoch: 029, GPU: 0, Train Acc: 0.9758, Val Acc: 0.9590, Test Acc: 0.9589, Inference Time: 71.80964844s
+[INFO/SpawnProcess-1] [2023-04-06 06:50:40] Start train on epoch 030
+[INFO/SpawnProcess-4] [2023-04-06 06:50:40] Start train on epoch 030
+[INFO/SpawnProcess-2] [2023-04-06 06:50:40] Start train on epoch 030
+[INFO/SpawnProcess-3] [2023-04-06 06:50:40] Start train on epoch 030
+[INFO/SpawnProcess-3] [2023-04-06 06:50:44] Epoch: 030, GPU: 2, Loss: 0.1663
+[INFO/SpawnProcess-4] [2023-04-06 06:50:44] Epoch: 030, GPU: 3, Loss: 0.1222
+[INFO/SpawnProcess-1] [2023-04-06 06:50:44] Epoch: 030, GPU: 0, Loss: 0.1535
+[INFO/SpawnProcess-2] [2023-04-06 06:50:44] Epoch: 030, GPU: 1, Loss: 0.1222
+[INFO/SpawnProcess-1] [2023-04-06 06:51:55] Epoch: 030, GPU: 0, Train Acc: 0.9765, Val Acc: 0.9599, Test Acc: 0.9601, Inference Time: 71.45410156s
+[INFO/SpawnProcess-1] [2023-04-06 06:51:55] Start train on epoch 031
+[INFO/SpawnProcess-4] [2023-04-06 06:51:55] Start train on epoch 031
+[INFO/SpawnProcess-3] [2023-04-06 06:51:55] Start train on epoch 031
+[INFO/SpawnProcess-2] [2023-04-06 06:51:55] Start train on epoch 031
+[INFO/SpawnProcess-4] [2023-04-06 06:51:59] Epoch: 031, GPU: 3, Loss: 0.1418
+[INFO/SpawnProcess-1] [2023-04-06 06:51:59] Epoch: 031, GPU: 0, Loss: 0.0960
+[INFO/SpawnProcess-2] [2023-04-06 06:51:59] Epoch: 031, GPU: 1, Loss: 0.1121
+[INFO/SpawnProcess-3] [2023-04-06 06:51:59] Epoch: 031, GPU: 2, Loss: 0.1040
+[INFO/SpawnProcess-1] [2023-04-06 06:53:16] Epoch: 031, GPU: 0, Train Acc: 0.9742, Val Acc: 0.9554, Test Acc: 0.9568, Inference Time: 76.69664063s
+[INFO/SpawnProcess-1] [2023-04-06 06:53:16] Start train on epoch 032
+[INFO/SpawnProcess-3] [2023-04-06 06:53:16] Start train on epoch 032
+[INFO/SpawnProcess-4] [2023-04-06 06:53:16] Start train on epoch 032
+[INFO/SpawnProcess-2] [2023-04-06 06:53:16] Start train on epoch 032
+[INFO/SpawnProcess-3] [2023-04-06 06:53:19] Epoch: 032, GPU: 2, Loss: 0.0930
+[INFO/SpawnProcess-2] [2023-04-06 06:53:19] Epoch: 032, GPU: 1, Loss: 0.0879
+[INFO/SpawnProcess-1] [2023-04-06 06:53:19] Epoch: 032, GPU: 0, Loss: 0.0816
+[INFO/SpawnProcess-4] [2023-04-06 06:53:19] Epoch: 032, GPU: 3, Loss: 0.1233
+[INFO/SpawnProcess-1] [2023-04-06 06:54:31] Epoch: 032, GPU: 0, Train Acc: 0.9764, Val Acc: 0.9590, Test Acc: 0.9596, Inference Time: 72.11446094s
+[INFO/SpawnProcess-1] [2023-04-06 06:54:31] Start train on epoch 033
+[INFO/SpawnProcess-2] [2023-04-06 06:54:31] Start train on epoch 033
+[INFO/SpawnProcess-4] [2023-04-06 06:54:31] Start train on epoch 033
+[INFO/SpawnProcess-3] [2023-04-06 06:54:31] Start train on epoch 033
+[INFO/SpawnProcess-3] [2023-04-06 06:54:35] Epoch: 033, GPU: 2, Loss: 0.0883
+[INFO/SpawnProcess-2] [2023-04-06 06:54:35] Epoch: 033, GPU: 1, Loss: 0.0813
+[INFO/SpawnProcess-1] [2023-04-06 06:54:35] Epoch: 033, GPU: 0, Loss: 0.1421
+[INFO/SpawnProcess-4] [2023-04-06 06:54:35] Epoch: 033, GPU: 3, Loss: 0.1281
+[INFO/SpawnProcess-1] [2023-04-06 06:55:45] Epoch: 033, GPU: 0, Train Acc: 0.9758, Val Acc: 0.9586, Test Acc: 0.9600, Inference Time: 70.78317187s
+[INFO/SpawnProcess-1] [2023-04-06 06:55:45] Start train on epoch 034
+[INFO/SpawnProcess-2] [2023-04-06 06:55:45] Start train on epoch 034
+[INFO/SpawnProcess-4] [2023-04-06 06:55:45] Start train on epoch 034
+[INFO/SpawnProcess-3] [2023-04-06 06:55:45] Start train on epoch 034
+[INFO/SpawnProcess-3] [2023-04-06 06:55:49] Epoch: 034, GPU: 2, Loss: 2.7255
+[INFO/SpawnProcess-4] [2023-04-06 06:55:49] Epoch: 034, GPU: 3, Loss: 3.7965
+[INFO/SpawnProcess-2] [2023-04-06 06:55:49] Epoch: 034, GPU: 1, Loss: 2.0180
+[INFO/SpawnProcess-1] [2023-04-06 06:55:49] Epoch: 034, GPU: 0, Loss: 1.8169
+[INFO/SpawnProcess-1] [2023-04-06 06:57:00] Epoch: 034, GPU: 0, Train Acc: 0.8807, Val Acc: 0.8901, Test Acc: 0.8879, Inference Time: 71.45951562s
+[INFO/SpawnProcess-1] [2023-04-06 06:57:00] Start train on epoch 035
+[INFO/SpawnProcess-2] [2023-04-06 06:57:00] Start train on epoch 035
+[INFO/SpawnProcess-3] [2023-04-06 06:57:00] Start train on epoch 035
+[INFO/SpawnProcess-4] [2023-04-06 06:57:00] Start train on epoch 035
+[INFO/SpawnProcess-1] [2023-04-06 06:57:04] Epoch: 035, GPU: 0, Loss: 0.6394
+[INFO/SpawnProcess-3] [2023-04-06 06:57:04] Epoch: 035, GPU: 2, Loss: 0.9232
+[INFO/SpawnProcess-4] [2023-04-06 06:57:04] Epoch: 035, GPU: 3, Loss: 0.7242
+[INFO/SpawnProcess-2] [2023-04-06 06:57:04] Epoch: 035, GPU: 1, Loss: 1.0616
+[INFO/SpawnProcess-1] [2023-04-06 06:58:14] Epoch: 035, GPU: 0, Train Acc: 0.9290, Val Acc: 0.9336, Test Acc: 0.9328, Inference Time: 69.94498438s
+[INFO/SpawnProcess-1] [2023-04-06 06:58:14] Start train on epoch 036
+[INFO/SpawnProcess-2] [2023-04-06 06:58:14] Start train on epoch 036
+[INFO/SpawnProcess-4] [2023-04-06 06:58:14] Start train on epoch 036
+[INFO/SpawnProcess-3] [2023-04-06 06:58:14] Start train on epoch 036
+[INFO/SpawnProcess-3] [2023-04-06 06:58:17] Epoch: 036, GPU: 2, Loss: 0.4931
+[INFO/SpawnProcess-4] [2023-04-06 06:58:17] Epoch: 036, GPU: 3, Loss: 0.6195
+[INFO/SpawnProcess-1] [2023-04-06 06:58:17] Epoch: 036, GPU: 0, Loss: 0.4914
+[INFO/SpawnProcess-2] [2023-04-06 06:58:17] Epoch: 036, GPU: 1, Loss: 0.4622
+[INFO/SpawnProcess-1] [2023-04-06 06:59:29] Epoch: 036, GPU: 0, Train Acc: 0.9447, Val Acc: 0.9450, Test Acc: 0.9445, Inference Time: 72.23539062s
+[INFO/SpawnProcess-1] [2023-04-06 06:59:29] Start train on epoch 037
+[INFO/SpawnProcess-2] [2023-04-06 06:59:29] Start train on epoch 037
+[INFO/SpawnProcess-4] [2023-04-06 06:59:29] Start train on epoch 037
+[INFO/SpawnProcess-3] [2023-04-06 06:59:29] Start train on epoch 037
+[INFO/SpawnProcess-4] [2023-04-06 06:59:33] Epoch: 037, GPU: 3, Loss: 0.3815
+[INFO/SpawnProcess-1] [2023-04-06 06:59:33] Epoch: 037, GPU: 0, Loss: 0.3604
+[INFO/SpawnProcess-2] [2023-04-06 06:59:33] Epoch: 037, GPU: 1, Loss: 0.5056
+[INFO/SpawnProcess-3] [2023-04-06 06:59:33] Epoch: 037, GPU: 2, Loss: 0.4036
+[INFO/SpawnProcess-1] [2023-04-06 07:00:46] Epoch: 037, GPU: 0, Train Acc: 0.9553, Val Acc: 0.9530, Test Acc: 0.9510, Inference Time: 72.83453906s
+[INFO/SpawnProcess-1] [2023-04-06 07:00:46] Start train on epoch 038
+[INFO/SpawnProcess-2] [2023-04-06 07:00:46] Start train on epoch 038
+[INFO/SpawnProcess-4] [2023-04-06 07:00:46] Start train on epoch 038
+[INFO/SpawnProcess-3] [2023-04-06 07:00:46] Start train on epoch 038
+[INFO/SpawnProcess-4] [2023-04-06 07:00:49] Epoch: 038, GPU: 3, Loss: 0.3363
+[INFO/SpawnProcess-2] [2023-04-06 07:00:49] Epoch: 038, GPU: 1, Loss: 0.2811
+[INFO/SpawnProcess-3] [2023-04-06 07:00:49] Epoch: 038, GPU: 2, Loss: 0.2930
+[INFO/SpawnProcess-1] [2023-04-06 07:00:49] Epoch: 038, GPU: 0, Loss: 0.4275
+[INFO/SpawnProcess-1] [2023-04-06 07:02:03] Epoch: 038, GPU: 0, Train Acc: 0.9579, Val Acc: 0.9541, Test Acc: 0.9527, Inference Time: 74.45050781s
+[INFO/SpawnProcess-1] [2023-04-06 07:02:03] Start train on epoch 039
+[INFO/SpawnProcess-2] [2023-04-06 07:02:03] Start train on epoch 039
+[INFO/SpawnProcess-4] [2023-04-06 07:02:03] Start train on epoch 039
+[INFO/SpawnProcess-3] [2023-04-06 07:02:03] Start train on epoch 039
+[INFO/SpawnProcess-3] [2023-04-06 07:02:07] Epoch: 039, GPU: 2, Loss: 0.3798
+[INFO/SpawnProcess-2] [2023-04-06 07:02:07] Epoch: 039, GPU: 1, Loss: 0.3720
+[INFO/SpawnProcess-1] [2023-04-06 07:02:07] Epoch: 039, GPU: 0, Loss: 0.3101
+[INFO/SpawnProcess-4] [2023-04-06 07:02:07] Epoch: 039, GPU: 3, Loss: 0.2834
+[INFO/SpawnProcess-1] [2023-04-06 07:03:22] Epoch: 039, GPU: 0, Train Acc: 0.9615, Val Acc: 0.9556, Test Acc: 0.9550, Inference Time: 75.68150781s
+[INFO/SpawnProcess-1] [2023-04-06 07:03:22] Start train on epoch 040
+[INFO/SpawnProcess-4] [2023-04-06 07:03:22] Start train on epoch 040
+[INFO/SpawnProcess-2] [2023-04-06 07:03:22] Start train on epoch 040
+[INFO/SpawnProcess-3] [2023-04-06 07:03:22] Start train on epoch 040
+[INFO/SpawnProcess-4] [2023-04-06 07:03:26] Epoch: 040, GPU: 3, Loss: 0.2075
+[INFO/SpawnProcess-2] [2023-04-06 07:03:26] Epoch: 040, GPU: 1, Loss: 0.2817
+[INFO/SpawnProcess-1] [2023-04-06 07:03:26] Epoch: 040, GPU: 0, Loss: 0.3540
+[INFO/SpawnProcess-3] [2023-04-06 07:03:26] Epoch: 040, GPU: 2, Loss: 0.3586
+[INFO/SpawnProcess-1] [2023-04-06 07:04:32] Epoch: 040, GPU: 0, Train Acc: 0.9623, Val Acc: 0.9548, Test Acc: 0.9538, Inference Time: 66.30115625s
+[INFO/SpawnProcess-1] [2023-04-06 07:04:32] Start train on epoch 041
+[INFO/SpawnProcess-2] [2023-04-06 07:04:32] Start train on epoch 041
+[INFO/SpawnProcess-4] [2023-04-06 07:04:32] Start train on epoch 041
+[INFO/SpawnProcess-3] [2023-04-06 07:04:32] Start train on epoch 041
+[INFO/SpawnProcess-4] [2023-04-06 07:04:36] Epoch: 041, GPU: 3, Loss: 0.3010
+[INFO/SpawnProcess-2] [2023-04-06 07:04:36] Epoch: 041, GPU: 1, Loss: 0.2498
+[INFO/SpawnProcess-3] [2023-04-06 07:04:36] Epoch: 041, GPU: 2, Loss: 0.3190
+[INFO/SpawnProcess-1] [2023-04-06 07:04:36] Epoch: 041, GPU: 0, Loss: 0.2417
+[INFO/SpawnProcess-1] [2023-04-06 07:05:55] Epoch: 041, GPU: 0, Train Acc: 0.9641, Val Acc: 0.9560, Test Acc: 0.9552, Inference Time: 78.95921094s
+[INFO/SpawnProcess-1] [2023-04-06 07:05:55] Start train on epoch 042
+[INFO/SpawnProcess-2] [2023-04-06 07:05:55] Start train on epoch 042
+[INFO/SpawnProcess-3] [2023-04-06 07:05:55] Start train on epoch 042
+[INFO/SpawnProcess-4] [2023-04-06 07:05:55] Start train on epoch 042
+[INFO/SpawnProcess-4] [2023-04-06 07:05:58] Epoch: 042, GPU: 3, Loss: 0.4097
+[INFO/SpawnProcess-2] [2023-04-06 07:05:58] Epoch: 042, GPU: 1, Loss: 0.3491
+[INFO/SpawnProcess-1] [2023-04-06 07:05:58] Epoch: 042, GPU: 0, Loss: 0.3017
+[INFO/SpawnProcess-3] [2023-04-06 07:05:58] Epoch: 042, GPU: 2, Loss: 0.3653
+[INFO/SpawnProcess-1] [2023-04-06 07:07:11] Epoch: 042, GPU: 0, Train Acc: 0.9651, Val Acc: 0.9558, Test Acc: 0.9556, Inference Time: 72.19798438s
+[INFO/SpawnProcess-1] [2023-04-06 07:07:11] Start train on epoch 043
+[INFO/SpawnProcess-2] [2023-04-06 07:07:11] Start train on epoch 043
+[INFO/SpawnProcess-4] [2023-04-06 07:07:11] Start train on epoch 043
+[INFO/SpawnProcess-3] [2023-04-06 07:07:11] Start train on epoch 043
+[INFO/SpawnProcess-3] [2023-04-06 07:07:14] Epoch: 043, GPU: 2, Loss: 0.1871
+[INFO/SpawnProcess-2] [2023-04-06 07:07:14] Epoch: 043, GPU: 1, Loss: 0.2195
+[INFO/SpawnProcess-4] [2023-04-06 07:07:14] Epoch: 043, GPU: 3, Loss: 0.1829
+[INFO/SpawnProcess-1] [2023-04-06 07:07:14] Epoch: 043, GPU: 0, Loss: 0.3029
+[INFO/SpawnProcess-1] [2023-04-06 07:08:22] Epoch: 043, GPU: 0, Train Acc: 0.9675, Val Acc: 0.9568, Test Acc: 0.9574, Inference Time: 67.74007031s
+[INFO/SpawnProcess-1] [2023-04-06 07:08:22] Start train on epoch 044
+[INFO/SpawnProcess-4] [2023-04-06 07:08:22] Start train on epoch 044
+[INFO/SpawnProcess-3] [2023-04-06 07:08:22] Start train on epoch 044
+[INFO/SpawnProcess-2] [2023-04-06 07:08:22] Start train on epoch 044
+[INFO/SpawnProcess-2] [2023-04-06 07:08:25] Epoch: 044, GPU: 1, Loss: 0.2001
+[INFO/SpawnProcess-4] [2023-04-06 07:08:25] Epoch: 044, GPU: 3, Loss: 0.3492
+[INFO/SpawnProcess-1] [2023-04-06 07:08:25] Epoch: 044, GPU: 0, Loss: 0.2627
+[INFO/SpawnProcess-3] [2023-04-06 07:08:25] Epoch: 044, GPU: 2, Loss: 0.3449
+[INFO/SpawnProcess-1] [2023-04-06 07:09:38] Epoch: 044, GPU: 0, Train Acc: 0.9685, Val Acc: 0.9587, Test Acc: 0.9575, Inference Time: 73.03084375s
+[INFO/SpawnProcess-1] [2023-04-06 07:09:38] Start train on epoch 045
+[INFO/SpawnProcess-2] [2023-04-06 07:09:38] Start train on epoch 045
+[INFO/SpawnProcess-3] [2023-04-06 07:09:38] Start train on epoch 045
+[INFO/SpawnProcess-4] [2023-04-06 07:09:38] Start train on epoch 045
+[INFO/SpawnProcess-3] [2023-04-06 07:09:42] Epoch: 045, GPU: 2, Loss: 0.2510
+[INFO/SpawnProcess-2] [2023-04-06 07:09:42] Epoch: 045, GPU: 1, Loss: 0.2154
+[INFO/SpawnProcess-4] [2023-04-06 07:09:42] Epoch: 045, GPU: 3, Loss: 0.1723
+[INFO/SpawnProcess-1] [2023-04-06 07:09:42] Epoch: 045, GPU: 0, Loss: 0.2515
+[INFO/SpawnProcess-1] [2023-04-06 07:10:57] Epoch: 045, GPU: 0, Train Acc: 0.9687, Val Acc: 0.9571, Test Acc: 0.9569, Inference Time: 75.48208594s
+[INFO/SpawnProcess-1] [2023-04-06 07:10:57] Start train on epoch 046
+[INFO/SpawnProcess-2] [2023-04-06 07:10:57] Start train on epoch 046
+[INFO/SpawnProcess-4] [2023-04-06 07:10:57] Start train on epoch 046
+[INFO/SpawnProcess-3] [2023-04-06 07:10:57] Start train on epoch 046
+[INFO/SpawnProcess-4] [2023-04-06 07:11:01] Epoch: 046, GPU: 3, Loss: 0.2338
+[INFO/SpawnProcess-3] [2023-04-06 07:11:01] Epoch: 046, GPU: 2, Loss: 0.2337
+[INFO/SpawnProcess-2] [2023-04-06 07:11:01] Epoch: 046, GPU: 1, Loss: 0.2893
+[INFO/SpawnProcess-1] [2023-04-06 07:11:01] Epoch: 046, GPU: 0, Loss: 0.2614
+[INFO/SpawnProcess-1] [2023-04-06 07:12:10] Epoch: 046, GPU: 0, Train Acc: 0.9691, Val Acc: 0.9567, Test Acc: 0.9572, Inference Time: 69.18857031s
+[INFO/SpawnProcess-1] [2023-04-06 07:12:10] Start train on epoch 047
+[INFO/SpawnProcess-2] [2023-04-06 07:12:10] Start train on epoch 047
+[INFO/SpawnProcess-4] [2023-04-06 07:12:10] Start train on epoch 047
+[INFO/SpawnProcess-3] [2023-04-06 07:12:10] Start train on epoch 047
+[INFO/SpawnProcess-3] [2023-04-06 07:12:13] Epoch: 047, GPU: 2, Loss: 0.1873
+[INFO/SpawnProcess-2] [2023-04-06 07:12:13] Epoch: 047, GPU: 1, Loss: 0.1667
+[INFO/SpawnProcess-4] [2023-04-06 07:12:13] Epoch: 047, GPU: 3, Loss: 0.1964
+[INFO/SpawnProcess-1] [2023-04-06 07:12:13] Epoch: 047, GPU: 0, Loss: 0.1702
+[INFO/SpawnProcess-1] [2023-04-06 07:13:25] Epoch: 047, GPU: 0, Train Acc: 0.9709, Val Acc: 0.9579, Test Acc: 0.9568, Inference Time: 71.93342187s
+[INFO/SpawnProcess-1] [2023-04-06 07:13:25] Start train on epoch 048
+[INFO/SpawnProcess-2] [2023-04-06 07:13:25] Start train on epoch 048
+[INFO/SpawnProcess-3] [2023-04-06 07:13:25] Start train on epoch 048
+[INFO/SpawnProcess-4] [2023-04-06 07:13:25] Start train on epoch 048
+[INFO/SpawnProcess-4] [2023-04-06 07:13:29] Epoch: 048, GPU: 3, Loss: 0.1667
+[INFO/SpawnProcess-3] [2023-04-06 07:13:29] Epoch: 048, GPU: 2, Loss: 0.2088
+[INFO/SpawnProcess-1] [2023-04-06 07:13:29] Epoch: 048, GPU: 0, Loss: 0.1839
+[INFO/SpawnProcess-2] [2023-04-06 07:13:29] Epoch: 048, GPU: 1, Loss: 0.2704
+[INFO/SpawnProcess-1] [2023-04-06 07:14:48] Epoch: 048, GPU: 0, Train Acc: 0.9705, Val Acc: 0.9570, Test Acc: 0.9564, Inference Time: 79.49142969s
+[INFO/SpawnProcess-1] [2023-04-06 07:14:48] Start train on epoch 049
+[INFO/SpawnProcess-2] [2023-04-06 07:14:48] Start train on epoch 049
+[INFO/SpawnProcess-3] [2023-04-06 07:14:48] Start train on epoch 049
+[INFO/SpawnProcess-4] [2023-04-06 07:14:48] Start train on epoch 049
+[INFO/SpawnProcess-2] [2023-04-06 07:14:52] Epoch: 049, GPU: 1, Loss: 0.1677
+[INFO/SpawnProcess-4] [2023-04-06 07:14:52] Epoch: 049, GPU: 3, Loss: 0.2027
+[INFO/SpawnProcess-3] [2023-04-06 07:14:52] Epoch: 049, GPU: 2, Loss: 0.2539
+[INFO/SpawnProcess-1] [2023-04-06 07:14:52] Epoch: 049, GPU: 0, Loss: 0.2308
+[INFO/SpawnProcess-1] [2023-04-06 07:16:03] Epoch: 049, GPU: 0, Train Acc: 0.9710, Val Acc: 0.9580, Test Acc: 0.9573, Inference Time: 71.28442969s
+[INFO/SpawnProcess-4] process shutting down
+[INFO/SpawnProcess-1] process shutting down
+[INFO/SpawnProcess-2] process shutting down
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:8
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:5
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:7
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:11
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:13
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:1
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:2
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:3
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:6
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:10
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:9
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:14
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:15
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:12
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:4
+[INFO/SpawnProcess-4] calling terminate() for daemon Process-4:16
+[INFO/SpawnProcess-4] calling join() for process Process-4:8
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:11
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:10
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:14
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:8
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:12
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:13
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:16
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:5
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:4
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:6
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:7
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:9
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:15
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:12
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:1
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:2
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:14
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:18
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:32
+[INFO/SpawnProcess-2] calling terminate() for daemon Process-2:3
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:3
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:24
+[INFO/SpawnProcess-2] calling join() for process Process-2:11
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:8
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:17
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:31
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:25
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:28
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:23
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:16
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:21
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:6
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:27
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:30
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:1
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:19
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:20
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:4
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:11
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:9
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:7
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:10
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:26
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:5
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:2
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:15
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:29
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:22
+[INFO/SpawnProcess-1] calling terminate() for daemon Process-1:13
+[INFO/SpawnProcess-1] calling join() for process Process-1:12
+[INFO/SpawnProcess-3] process shutting down
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:13
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:14
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:5
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:4
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:1
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:16
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:7
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:9
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:10
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:6
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:8
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:11
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:12
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:2
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:15
+[INFO/SpawnProcess-3] calling terminate() for daemon Process-3:3
+[INFO/SpawnProcess-3] calling join() for process Process-3:13
+[INFO/SpawnProcess-4] calling join() for process Process-4:5
+[INFO/SpawnProcess-4] calling join() for process Process-4:7
+[INFO/SpawnProcess-1] calling join() for process Process-1:14
+[INFO/SpawnProcess-4] calling join() for process Process-4:11
+[INFO/SpawnProcess-4] calling join() for process Process-4:13
+[INFO/SpawnProcess-4] calling join() for process Process-4:1
+[INFO/SpawnProcess-4] calling join() for process Process-4:2
+[INFO/SpawnProcess-4] calling join() for process Process-4:3
+[INFO/SpawnProcess-4] calling join() for process Process-4:6
+[INFO/SpawnProcess-4] calling join() for process Process-4:10
+[INFO/SpawnProcess-4] calling join() for process Process-4:9
+[INFO/SpawnProcess-4] calling join() for process Process-4:14
+[INFO/SpawnProcess-4] calling join() for process Process-4:15
+[INFO/SpawnProcess-3] calling join() for process Process-3:14
+[INFO/SpawnProcess-4] calling join() for process Process-4:12
+[INFO/SpawnProcess-4] calling join() for process Process-4:4
+[INFO/SpawnProcess-4] calling join() for process Process-4:16
+[INFO/SpawnProcess-4] process exiting with exitcode 0
+[INFO/SpawnProcess-1] calling join() for process Process-1:18
+[INFO/SpawnProcess-1] calling join() for process Process-1:32
+[INFO/SpawnProcess-1] calling join() for process Process-1:3
+[INFO/SpawnProcess-1] calling join() for process Process-1:24
+[INFO/SpawnProcess-1] calling join() for process Process-1:8
+[INFO/SpawnProcess-1] calling join() for process Process-1:17
+[INFO/SpawnProcess-1] calling join() for process Process-1:31
+[INFO/SpawnProcess-1] calling join() for process Process-1:25
+[INFO/SpawnProcess-1] calling join() for process Process-1:28
+[INFO/SpawnProcess-1] calling join() for process Process-1:23
+[INFO/SpawnProcess-1] calling join() for process Process-1:16
+[INFO/SpawnProcess-1] calling join() for process Process-1:21
+[INFO/SpawnProcess-1] calling join() for process Process-1:6
+[INFO/SpawnProcess-1] calling join() for process Process-1:27
+[INFO/SpawnProcess-1] calling join() for process Process-1:30
+[INFO/SpawnProcess-1] calling join() for process Process-1:1
+[INFO/SpawnProcess-1] calling join() for process Process-1:19
+[INFO/SpawnProcess-1] calling join() for process Process-1:20
+[INFO/SpawnProcess-1] calling join() for process Process-1:4
+[INFO/SpawnProcess-1] calling join() for process Process-1:11
+[INFO/SpawnProcess-1] calling join() for process Process-1:9
+[INFO/SpawnProcess-1] calling join() for process Process-1:7
+[INFO/SpawnProcess-2] calling join() for process Process-2:10
+[INFO/SpawnProcess-1] calling join() for process Process-1:10
+[INFO/SpawnProcess-1] calling join() for process Process-1:26
+[INFO/SpawnProcess-1] calling join() for process Process-1:5
+[INFO/SpawnProcess-1] calling join() for process Process-1:2
+[INFO/SpawnProcess-1] calling join() for process Process-1:15
+[INFO/SpawnProcess-3] calling join() for process Process-3:5
+[INFO/SpawnProcess-3] calling join() for process Process-3:4
+[INFO/SpawnProcess-3] calling join() for process Process-3:1
+[INFO/SpawnProcess-3] calling join() for process Process-3:16
+[INFO/SpawnProcess-3] calling join() for process Process-3:7
+[INFO/SpawnProcess-3] calling join() for process Process-3:9
+[INFO/SpawnProcess-2] calling join() for process Process-2:14
+[W CudaIPCTypes.cpp:15] Producer process has been terminated before all shared CUDA tensors released. See Note [Sharing CUDA tensors]
+[INFO/SpawnProcess-2] calling join() for process Process-2:8
+[INFO/SpawnProcess-2] calling join() for process Process-2:12
+[INFO/SpawnProcess-2] calling join() for process Process-2:13
+[INFO/SpawnProcess-1] calling join() for process Process-1:29
+[INFO/SpawnProcess-1] calling join() for process Process-1:22
+[INFO/SpawnProcess-1] calling join() for process Process-1:13
+[INFO/SpawnProcess-1] process exiting with exitcode 0
+[INFO/SpawnProcess-2] calling join() for process Process-2:16
+[INFO/SpawnProcess-2] calling join() for process Process-2:5
+[INFO/SpawnProcess-2] calling join() for process Process-2:4
+[INFO/SpawnProcess-2] calling join() for process Process-2:6
+[INFO/SpawnProcess-2] calling join() for process Process-2:7
+[INFO/SpawnProcess-2] calling join() for process Process-2:9
+[INFO/SpawnProcess-2] calling join() for process Process-2:15
+[INFO/SpawnProcess-2] calling join() for process Process-2:1
+[INFO/SpawnProcess-2] calling join() for process Process-2:2
+[INFO/SpawnProcess-2] calling join() for process Process-2:3
+[INFO/SpawnProcess-2] process exiting with exitcode 0
+[INFO/SpawnProcess-3] calling join() for process Process-3:10
+[INFO/SpawnProcess-3] calling join() for process Process-3:6
+[INFO/SpawnProcess-3] calling join() for process Process-3:8
+[INFO/SpawnProcess-3] calling join() for process Process-3:11
+[INFO/SpawnProcess-3] calling join() for process Process-3:12
+[INFO/SpawnProcess-3] calling join() for process Process-3:2
+[INFO/SpawnProcess-3] calling join() for process Process-3:15
+[INFO/SpawnProcess-3] calling join() for process Process-3:3
+[INFO/SpawnProcess-3] process exiting with exitcode 0
+[W CudaIPCTypes.cpp:15] Producer process has been terminated before all shared CUDA tensors released. See Note [Sharing CUDA tensors]
+[W CudaIPCTypes.cpp:15] Producer process has been terminated before all shared CUDA tensors released. See Note [Sharing CUDA tensors]
+[W CudaIPCTypes.cpp:15] Producer process has been terminated before all shared CUDA tensors released. See Note [Sharing CUDA tensors]
+[INFO/MainProcess] process shutting down
+]0;root@192: /pygroot@192:/pyg# [Kexit
