@@ -5,8 +5,8 @@ The original source from PyTorch Geometric is available at:
 """
 import argparse
 import copy
-import os
 import logging
+import os
 
 from datetime import datetime
 
@@ -24,13 +24,14 @@ from torch_geometric.loader import NeighborLoader
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Data-parallel training of GraphSAGE with Reddit")
+    parser = argparse.ArgumentParser()
     parser.add_argument('--num_layers', type=int, default=3)
     parser.add_argument('--hidden_channels', type=int, default=256)
     parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=512)
+    parser.add_argument('--checkpoint', type=str, default='../checkpoints/reddit_sage.pt')
     parser.add_argument('--nnodes', type=int, default=2)
     parser.add_argument('--nprocs', type=int, default=4)
     parser.add_argument('--node_id', type=int, required=True)
@@ -145,7 +146,7 @@ def run(local_rank, dataset, logger, args):
         num_layers = args.num_layers,
         dropout = args.dropout)
 
-    model.load_state_dict(torch.load(f="../checkpoints/reddit_sage.pt"))
+    model.load_state_dict(torch.load(f=args.checkpoint))
     model = model.to(local_rank)
     model = DistributedDataParallel(model, device_ids=[local_rank])
 
