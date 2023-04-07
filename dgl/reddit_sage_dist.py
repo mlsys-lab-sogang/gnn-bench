@@ -19,7 +19,6 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn.functional as F
-import torchmetrics.functional as MF
 from torch.nn.parallel import DistributedDataParallel
 
 import dgl
@@ -88,7 +87,7 @@ class DistSAGE(torch.nn.Module):
                 h = F.dropout(h, p=self.dropout, training=self.training)
         return h
     
-    def inference(self, data:dgl.distributed.DistGraph, x, device, batch_size):
+    def inference(self, data, device, batch_size):
         r"""
         Distributed layer-wise inference.
 
@@ -100,8 +99,7 @@ class DistSAGE(torch.nn.Module):
         # split input nodes based on 'partition book', and return a subset of nodes for local rank.
         # more details : https://docs.dgl.ai/generated/dgl.distributed.node_split.html#dgl.distributed.node_split 
         node_ids = dgl.distributed.node_split(np.arange(data.num_nodes()), data.get_partition_book(), force_even=True)
-        print('\n')
-        print(node_ids)
+
         # access to distributed tensor, shareded and stored in machines.
         # more details : https://docs.dgl.ai/api/python/dgl.distributed.html#distributed-tensor
         y = dgl.distributed.DistTensor(shape=(data.num_nodes(), self.hidden_size), dtype=torch.float32, name='h', persistent=True)
@@ -150,15 +148,16 @@ class DistSAGE(torch.nn.Module):
 def compute_acc(pred, labels):
     r"""Compute accuracy of prediction given the labels."""
     labels = labels.long()
-    return MF.accuracy(preds=pred, target=labels)
+
+    return (torch.argmax(pred, dim=1) == labels).float().sum() / len(pred)
 
 @torch.no_grad()
-def evaluate(model, data, inputs, labels, val_id, test_id, batch_size, device):
+def evaluate(model, data, labels, val_id, test_id, batch_size, device):
     model.eval()
 
-    pred = model.inference(data, inputs, batch_size, device)
+    pred = model.inference(data, device, batch_size)
 
-    return compute_acc(pred[val_id], labels[val_id]), compute_acc(pred[test_id], labels[val_id])
+    return compute_acc(pred[val_id], labels[val_id]), compute_acc(pred[test_id], labels[test_id])
 
 def run(args, device, data):
     r"""Train GraphSAGE in distributed manner."""
@@ -193,9 +192,10 @@ def run(args, device, data):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
     # training loop
-    iter_output = []
     for epoch in range(args.epochs):
         num_seeds, num_inputs = 0, 0
+        total_train_acc = 0
+        total_train_loss = 0
 
         # batch loop
         # for DDP.join, see : https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel.join 
@@ -204,7 +204,8 @@ def run(args, device, data):
                 optimizer.zero_grad()
 
                 # fetch features and labels.
-                batch_inputs, batch_labels = load_subtensor(data=data, seeds=output_nodes, input_nodes=input_nodes, device='cpu')
+                # batch_inputs, batch_labels = load_subtensor(data=data, seeds=output_nodes, input_nodes=input_nodes, device='cpu')
+                batch_inputs, batch_labels = load_subtensor(data=data, seeds=output_nodes, input_nodes=input_nodes, device=device)
 
                 batch_labels = batch_labels.long()
 
@@ -224,11 +225,14 @@ def run(args, device, data):
                 optimizer.step()
 
                 train_acc = compute_acc(batch_pred, batch_labels)
+                total_train_acc += train_acc
+                total_train_loss += loss.item()
         
+        train_acc = total_train_acc / (step + 1)
+        total_train_loss = total_train_loss / (step + 1)
         val_acc, test_acc = evaluate(
             model = model if args.standalone else model.module,
             data = data,
-            inputs = data.ndata['features'],
             labels = data.ndata['labels'],
             val_id = val_id,
             test_id = test_id,
@@ -238,7 +242,7 @@ def run(args, device, data):
 
         print(f'Epoch: {epoch:03d}, ' 
                 f'GPU(Partition): {device}, '
-                f'Loss: {loss.item():.4f}, '
+                f'Loss: {total_train_loss:.4f}, '
                 f'Train Acc: {train_acc:.4f}, '
                 f'Val Acc: {val_acc:.4f}, '
                 f'Test Acc: {test_acc:.4f}')
