@@ -30,13 +30,16 @@ def parse_args():
 
     # args for distributed setting.
     parser.add_argument('--graph_name', type=str, help='Name of partitioned graph. This name is made from `partition_graph.py`\'s output.')
-    parser.add_argument('--part_id', type=int, help="Graph partition id to use.")
     parser.add_argument('--ip_config', type=str, help="File(.txt) for IP configuration. File should have **all** participating cluster's IP (& Port) address.")
     parser.add_argument('--part_config', type=str, help="Path of partition config file(.json).")
     parser.add_argument('--standalone', action='store_true', help="Run in standalone mode. Usually used for testing.")
-    parser.add_argument('--nnodes', type=int, default=2, help="Total number of machines participating in distributed training.")
-    parser.add_argument('--nprocs', type=int, default=4, help="Total number of GPUs in current machine.")
-    parser.add_argument('--node_id', type=int, required=True, help="Current machine's ID for distributed setting. (0 ~ 'num_cluster - 1')")
+    parser.add_argument('--backend', type=str, default='nccl')
+
+    ## TODO: will remove later (since using launch.py script)
+    # parser.add_argument('--nnodes', type=int, default=2, help="Total number of machines participating in distributed training.")
+    # parser.add_argument('--nprocs', type=int, default=4, help="Total number of GPUs in current machine.")
+    # parser.add_argument('--node_id', type=int, required=True, help="Current machine's ID for distributed setting. (0 ~ 'num_cluster - 1')")
+    ## 
 
     # args for train setting.
     parser.add_argument('--num_layers', type=int, default=3)
@@ -254,7 +257,7 @@ def main(args):
 
     if not args.standalone:
         print(socket.gethostname(), "Initializing DistDGL process group")
-        dist.init_process_group(backend='nccl')
+        dist.init_process_group(backend=args.backend)
     
     print(socket.gethostname(), "Initializing DistGraph")
     data = dgl.distributed.DistGraph(graph_name=args.graph_name, part_config=args.part_config)
