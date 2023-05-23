@@ -4,16 +4,15 @@ The original source from DGL is available at:
     https://github.com/dmlc/dgl/tree/master/examples/pytorch/graphsage/dist
 """
 import argparse
-import socket
 import os
-import logging
+import socket
+import time
 
 from contextlib import contextmanager
-from datetime import datetime
 from tqdm.auto import tqdm
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 import torch
 import torch.distributed as dist
@@ -26,29 +25,30 @@ from dgl.nn.pytorch import SAGEConv
 from dgl.dataloading import NeighborSampler, DistNodeDataLoader
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Data-parallel training of GraphSAGE with Reddit")
+    parser = argparse.ArgumentParser(description="Data-parallel training of GraphSAGE")
 
-    # args for distributed setting.
-    parser.add_argument('--graph_name', type=str, help='Name of partitioned graph. This name is made from `partition_graph.py`\'s output.')
-    parser.add_argument('--ip_config', type=str, help="File(.txt) for IP configuration. File should have **all** participating cluster's IP (& Port) address.")
-    parser.add_argument('--part_config', type=str, help="Path of partition config file(.json).")
-    parser.add_argument('--standalone', action='store_true', help="Run in standalone mode. Usually used for testing.")
-    parser.add_argument('--backend', type=str, default='nccl')
+    # arguments for distributed setting.
+    parser.add_argument("--graph_name", type=str, help="Name of partitioned graph.")
+    parser.add_argument("--ip_config", type=str, help="File(.txt) for IP configuration. File should have **all** participating cluster's IP address.")
+    parser.add_argument("--part_config", type=str, help="Path of partition config file(.json).")
+    parser.add_argument("--backend", type=str, default="nccl", help="Pytorch Distributed backend")
+    parser.add_argument("--num_gpus", type=int, default=4, help="The number of GPU device in current cluster. Use -1 for CPU training.")
+    parser.add_argument("--net_type", type=str, default="socket", help="Backend net type, 'socket' or 'tensorpipe'.")
+    parser.add_argument("--standalone", action="store_true", help="Run in standalone mode, usually used for testing.")
 
-    ## TODO: will remove later (since using launch.py script)
-    # parser.add_argument('--nnodes', type=int, default=2, help="Total number of machines participating in distributed training.")
-    # parser.add_argument('--nprocs', type=int, default=4, help="Total number of GPUs in current machine.")
-    # parser.add_argument('--node_id', type=int, required=True, help="Current machine's ID for distributed setting. (0 ~ 'num_cluster - 1')")
-    ## 
-
-    # args for train setting.
-    parser.add_argument('--num_layers', type=int, default=3)
-    parser.add_argument('--hidden_channels', type=int, default=256)
-    parser.add_argument('--dropout', type=float, default=0.3)
-    parser.add_argument('--lr', type=float, default=0.01)
-    parser.add_argument('--epochs', type=int, default=50)
-    parser.add_argument('--batch_size', type=int, default=512)
-    parser.add_argument('--fanout', type=int, nargs='+', required=True)
+    # arguments for train.
+    parser.add_argument("--epochs", type=int, default=50)               # original code uses 20
+    parser.add_argument("--num_layers", type=int, default=3)            # original code uses 2
+    parser.add_argument("--hidden_channels", type=int, default=256)     # original code uses 16
+    parser.add_argument("--dropout", type=float, default=0.3)           # original code uses 0.5
+    parser.add_argument("--lr", type=float, default=0.01)               # original code uses 0.003
+    parser.add_argument("--batch_size", type=int, default=512)          # original code uses 1000
+    parser.add_argument("--fanout", type=int, nargs="+", required=True) # original code uses 10,25
+    
+    # arguments for evaluation and logging.
+    parser.add_argument("--eval_every", type=int, default=5)
+    parser.add_argument("--batch_size_eval", type=int, default=100000)
+    parser.add_argument("--log_every", type=int, default=20, help="Print logging informations for given steps.")
 
     args = parser.parse_args()
 
@@ -111,7 +111,7 @@ class DistSAGE(torch.nn.Module):
             if i == len(self.conv_layers) -1:
                 y = dgl.distributed.DistTensor(shape=(data.num_nodes(), self.output_size), dtype=torch.float32, name='h_last', persistent=True)
             
-            print(f'|V| = {data.num_nodes()}')
+            print(f'|V| = {data.num_nodes()}, eval batch size: {batch_size}')
 
             sampler = NeighborSampler(fanouts=[-1])
             dataloader = DistNodeDataLoader(
@@ -188,30 +188,46 @@ def run(args, device, data):
         dropout = args.dropout
     ).to(device)
 
-    # check if script is running on standalone setting or distributed setting.
+    # check if script is running on standalone setting or distributed setting
     if not args.standalone:
-        model = DistributedDataParallel(model, device_ids=[device], output_device=device)
-    
+        if args.num_gpus == -1:
+            # check if we train with only CPU
+            model = DistributedDataParallel(model)
+        else:
+            model = DistributedDataParallel(model, device_ids=[device], output_device=device)
+
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
     # training loop
+    iter_tput = []
+    epoch = 0
     for epoch in range(args.epochs):
+        tic = time.time()
+
         num_seeds, num_inputs = 0, 0
+
+        sample_time = 0
+        forward_time, backward_time = 0, 0
+        update_time = 0
+
         total_train_acc = 0
         total_train_loss = 0
+
+        start = time.time()
+        
+        # Loop over the dataloader to sample the computation graph as a list of blocks.
+        step_time = []
 
         # batch loop
         # for DDP.join, see : https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel.join 
         with model.join():
             for step, (input_nodes, output_nodes, blocks) in enumerate(dataloader):
-                optimizer.zero_grad()
+                tic_step = time.time()
+                sample_time += tic_step - start
 
                 # fetch features and labels.
-                # batch_inputs, batch_labels = load_subtensor(data=data, seeds=output_nodes, input_nodes=input_nodes, device='cpu')
-                batch_inputs, batch_labels = load_subtensor(data=data, seeds=output_nodes, input_nodes=input_nodes, device=device)
-
+                batch_inputs, batch_labels = load_subtensor(data=data, seeds=output_nodes, input_nodes=input_nodes, device='cpu')
                 batch_labels = batch_labels.long()
-
                 num_seeds += len(blocks[-1].dstdata[dgl.NID])
                 num_inputs += len(blocks[0].srcdata[dgl.NID])
 
@@ -221,39 +237,64 @@ def run(args, device, data):
                 batch_labels = batch_labels.to(device)
 
                 # compute loss and prediction
+                start = time.time()
                 batch_pred = model(blocks, batch_inputs)
                 loss = F.cross_entropy(batch_pred, batch_labels)
+                forward_end = time.time()
 
+                optimizer.zero_grad()   
                 loss.backward()
-                optimizer.step()
+                compute_end = time.time()
 
+                forward_time += forward_end - start
+                backward_time += compute_end - forward_end
+
+                optimizer.step()
+                update_time += time.time() - compute_end
+
+                # check step time
+                step_t = time.time() - tic_step
+                step_time.append(step_t)
+                iter_tput.append(len(blocks[-1].dstdata[dgl.NID]) / step_t)
+
+                # FIXME: maybe don't need this?
                 train_acc = compute_acc(batch_pred, batch_labels)
                 total_train_acc += train_acc
                 total_train_loss += loss.item()
-        
-        train_acc = total_train_acc / (step + 1)
-        total_train_loss = total_train_loss / (step + 1)
-        val_acc, test_acc = evaluate(
-            model = model if args.standalone else model.module,
-            data = data,
-            labels = data.ndata['labels'],
-            val_id = val_id,
-            test_id = test_id,
-            batch_size = args.batch_size,
-            device = device
-        )
 
-        print(f'Epoch: {epoch:03d}, ' 
-                f'GPU(Partition): {device}, '
-                f'Loss: {total_train_loss:.4f}, '
-                f'Train Acc: {train_acc:.4f}, '
-                f'Val Acc: {val_acc:.4f}, '
-                f'Test Acc: {test_acc:.4f}')
+                if step % args.log_every == 0:
+                    train_acc_step = compute_acc(batch_pred, batch_labels)
+                    gpu_mem_alloc = (torch.cuda.max_memory_allocated() / 1000000 if torch.cuda.is_available() else 0)
+                    print(f"Part {data.rank()} | Epoch {epoch:05d} | Step {step:05d} | Loss {loss.item():.4f} | Train Acc {train_acc_step.item():.4f} | "
+                          f"Speed (samples/sec) {np.mean(iter_tput[3:]):.4f} | GPU {gpu_mem_alloc:.2f} MB | Time {np.sum(step_time[-args.log_every:]):.3f} s")
+                    
+                start = time.time()
+
+        toc = time.time()
+        print(f"Part {data.rank()}, Epoch Time(s): {(toc - tic):.4f}, sample+data_copy: {sample_time:.4f}, "
+              f"forward: {forward_time:.4f}, backward: {backward_time:.4f}, update: {update_time:.4f}, #seeds: {num_seeds}, #inputs: {num_inputs}")
+        
+        epoch += 1
+
+        if epoch % args.eval_every == 0 and epoch != 0:
+            train_acc = total_train_acc / (step + 1)
+            total_train_loss = total_train_loss / (step + 1)
+            start = time.time()
+            val_acc, test_acc = evaluate(
+                model = model if args.standalone else model.module,
+                data = data,
+                labels = data.ndata['labels'],
+                val_id = val_id,
+                test_id = test_id,
+                batch_size = args.batch_size_eval,
+                device = device
+            )
+            print(f"Part {data.rank()}, Train Acc {train_acc:.4f}, Val Acc {val_acc:.4f}, Test Acc {test_acc:.4f}, inference time: {(time.time() - start):.4f} s")
 
 def main(args):
     print(socket.gethostname(), "Initializing DistDGL")
 
-    dgl.distributed.initialize(ip_config=args.ip_config, net_type='socket')
+    dgl.distributed.initialize(ip_config=args.ip_config, net_type=args.net_type)
 
     if not args.standalone:
         print(socket.gethostname(), "Initializing DistDGL process group")
@@ -306,18 +347,20 @@ def main(args):
     local_nid = part_book.partid2nids(part_book.partid).detach().numpy()
     print(f'Part: {data.rank()}, '
           f'Train: {len(train_id)} '
-          f'(local: {np.intersect1d(train_id.numpy(), local_nid)}), '
+          f'(local: {len(np.intersect1d(train_id.numpy(), local_nid))}), '
           f'Val: {len(val_id)} '
-          f'(local: {np.intersect1d(val_id.numpy(), local_nid)}), '
+          f'(local: {len(np.intersect1d(val_id.numpy(), local_nid))}), '
           f'Test: {len(test_id)} '
-          f'(local: {np.intersect1d(test_id.numpy(), local_nid)})')
+          f'(local: {len(np.intersect1d(test_id.numpy(), local_nid))})')
 
     del local_nid
 
-    # TODO: Does it correct? Need to check.
-    # get device id (global rank in PyTorch DDP)
-    device_id = data.rank() % args.nprocs
-    device = torch.device(f'cuda:{device_id}')
+    # Get device id
+    if args.num_gpus == -1:
+        device = torch.device('cpu')
+    else:
+        device_id = data.rank() & args.num_gpus
+        device = torch.device(f"cuda:{str(device_id)}")
 
     labels = data.ndata['labels'][np.arange(data.num_nodes())]
     n_classes = len(torch.unique(labels[torch.logical_not(torch.isnan(labels))]))
@@ -335,9 +378,11 @@ def main(args):
 if __name__ == "__main__":
     args = parse_args()
 
-    args.world_size = args.nnodes * args.nprocs
+    # FIXME: since using launch.py, how can count total number of GPUs?
+    # args.world_size = args.nnodes * args.nprocs
+    # args.world_size = args.num_gpus
 
     print(f'Args: {args}')
-    print(f'Using {args.world_size} GPUs')
+    # print(f'Using {args.world_size} GPUs')
 
     main(args)
