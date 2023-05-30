@@ -35,6 +35,7 @@ def parse_args():
     parser.add_argument("--num_gpus", type=int, default=4, help="The number of GPU device in current cluster. Use -1 for CPU training.")
     parser.add_argument("--net_type", type=str, default="socket", help="Backend net type, 'socket' or 'tensorpipe'.")
     parser.add_argument("--standalone", action="store_true", help="Run in standalone mode, usually used for testing.")
+    parser.add_argument("--local_rank", type=int, help="get rank of the process")       # `torch.distributed.launch` checks for args.local_rank.
 
     # arguments for train.
     parser.add_argument("--epochs", type=int, default=50)               # original code uses 20
@@ -198,10 +199,19 @@ def run(args, device, data):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
+    # dataframe for recording logs
+    batch_history = pd.DataFrame(columns=['step', 'elapsed_time', 'mem_usage'])
+    acc_history = pd.DataFrame(columns=['epoch', 'loss', 'train_acc', 'valid_acc', 'test_acc'])
+    log_dir = '../logs/'
+
     # training loop
     iter_tput = []
     epoch = 0
     for epoch in range(args.epochs):
+        # record GPU time
+        gpu_start_time = torch.cuda.Event(enable_timing=True)
+        gpu_end_time = torch.cuda.Event(enable_timing=True) 
+
         tic = time.time()
 
         num_seeds, num_inputs = 0, 0
@@ -225,6 +235,8 @@ def run(args, device, data):
                 tic_step = time.time()
                 sample_time += tic_step - start
 
+                gpu_start_time.record()
+
                 # fetch features and labels.
                 batch_inputs, batch_labels = load_subtensor(data=data, seeds=output_nodes, input_nodes=input_nodes, device='cpu')
                 batch_labels = batch_labels.long()
@@ -239,6 +251,8 @@ def run(args, device, data):
                 # compute loss and prediction
                 start = time.time()
                 batch_pred = model(blocks, batch_inputs)
+                mem_usage = torch.cuda.max_memory_allocated()
+
                 loss = F.cross_entropy(batch_pred, batch_labels)
                 forward_end = time.time()
 
@@ -251,6 +265,15 @@ def run(args, device, data):
 
                 optimizer.step()
                 update_time += time.time() - compute_end
+
+                gpu_end_time.record()
+
+                torch.cuda.synchronize()
+
+                elapsed_time = gpu_start_time.elapsed_time(gpu_end_time) / 1000.0
+                mem_usage /= 2.0 ** 20
+
+                batch_history.loc[len(batch_history)] = [len(batch_history), elapsed_time, mem_usage]
 
                 # check step time
                 step_t = time.time() - tic_step
@@ -279,6 +302,10 @@ def run(args, device, data):
         if epoch % args.eval_every == 0 and epoch != 0:
             train_acc = total_train_acc / (step + 1)
             total_train_loss = total_train_loss / (step + 1)
+
+            # since this variable is held by GPU, move to CPU.
+            train_acc = train_acc.cpu()
+
             start = time.time()
             val_acc, test_acc = evaluate(
                 model = model if args.standalone else model.module,
@@ -290,6 +317,11 @@ def run(args, device, data):
                 device = device
             )
             print(f"Part {data.rank()}, Train Acc {train_acc:.4f}, Val Acc {val_acc:.4f}, Test Acc {test_acc:.4f}, inference time: {(time.time() - start):.4f} s")
+            acc_history.loc[len(acc_history)] = [epoch, total_train_loss, train_acc.item(), val_acc.item(), test_acc.item()]
+    
+    # FIXME: need to check local rank. 
+    batch_history.to_csv(os.path.join(log_dir, f"DGL_reddit_sage_dist_hidden{args.hidden_channels}_batch{args.batch_size}_fanout{'_'.join(map(str, args.fanout))}_rank{data.rank()}.csv"), index=False)
+    acc_history.to_csv(os.path.join(log_dir, f"DGL_reddit_sage_dist_hidden{args.hidden_channels}_batch{args.batch_size}_fanout{'_'.join(map(str, args.fanout))}_rank{data.rank()}_acc.csv"), index=False)
 
 def main(args):
     print(socket.gethostname(), "Initializing DistDGL")
