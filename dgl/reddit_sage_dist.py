@@ -320,8 +320,8 @@ def run(args, device, data):
             acc_history.loc[len(acc_history)] = [epoch, total_train_loss, train_acc.item(), val_acc.item(), test_acc.item()]
     
     # FIXME: need to check local rank. 
-    batch_history.to_csv(os.path.join(log_dir, f"DGL_reddit_sage_dist_hidden{args.hidden_channels}_batch{args.batch_size}_fanout{'_'.join(map(str, args.fanout))}_rank{data.rank()}.csv"), index=False)
-    acc_history.to_csv(os.path.join(log_dir, f"DGL_reddit_sage_dist_hidden{args.hidden_channels}_batch{args.batch_size}_fanout{'_'.join(map(str, args.fanout))}_rank{data.rank()}_acc.csv"), index=False)
+    batch_history.to_csv(os.path.join(log_dir, f"DGL_reddit_sage_dist_hidden{args.hidden_channels}_batch{args.batch_size}_fanout{'_'.join(map(str, args.fanout))}_machine{data.rank()}_rank{device.index}.csv"), index=False)
+    acc_history.to_csv(os.path.join(log_dir, f"DGL_reddit_sage_dist_hidden{args.hidden_channels}_batch{args.batch_size}_fanout{'_'.join(map(str, args.fanout))}_machine{data.rank()}_acc.csv"), index=False)
 
 def main(args):
     print(socket.gethostname(), "Initializing DistDGL")
