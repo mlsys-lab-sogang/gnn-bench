@@ -13,3 +13,5 @@ RUN pip install --upgrade pip
 RUN pip install dgl -f https://data.dgl.ai/wheels/cu113/repo.html
 RUN pip install -r /requirements.txt
 RUN pip uninstall -y outdated
+
+CMD ["/bin/bash", "partition_graph.sh"]
