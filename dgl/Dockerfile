@@ -1,7 +1,7 @@
 FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
 
+# dataset dir will made at /dgl/dataset
 RUN mkdir /logs/
-RUN mkdir /dataset/
 RUN mkdir /checkpoints/
 
 COPY ./dgl/ /dgl/
@@ -14,4 +14,4 @@ RUN pip install dgl -f https://data.dgl.ai/wheels/cu113/repo.html
 RUN pip install -r /requirements.txt
 RUN pip uninstall -y outdated
 
-CMD ["/bin/bash", "partition_graph.sh"]
+# CMD ["/bin/bash", "partition_graph.sh"]
