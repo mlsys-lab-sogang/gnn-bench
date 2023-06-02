@@ -16,7 +16,7 @@ RUN ["/bin/bash", "-i", "-c", "cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys"]
 RUN sed -ri 's/^#?PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
 
-ENTRYPOINT service ssh restart && service sshd restart && bash
+ENTRYPOINT service ssh restart && bash
 
 WORKDIR /dgl/
 
