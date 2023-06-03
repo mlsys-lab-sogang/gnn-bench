@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python3 launch.py --workspace /dgl --num_trainers $NUM_GPUS --num_samplers 0 --num_servers 1 --part_config dataset/reddit_partition/reddit.json --ip_config ip_config.txt "python3 reddit_sage_dist.py --graph_name dataset/reddit_partition --ip_config ip_config.txt --part_config dataset/reddit_partition/reddit.json --num_gpus $NUM_GPUS --epochs 50 --fanout 15 10 5"
+python3 launch.py --workspace /dgl --num_trainers $NUM_GPUS --num_samplers 0 --num_servers 1 --part_config dataset/reddit_partition/reddit.json --ip_config ip_config.txt --ssh_port=2222 "python3 reddit_sage_dist.py --graph_name dataset/reddit_partition --ip_config ip_config.txt --part_config dataset/reddit_partition/reddit.json --num_gpus $NUM_GPUS --epochs 50 --fanout 15 10 5"
