@@ -20,9 +20,14 @@ ENTRYPOINT service ssh restart && bash
 
 WORKDIR /dgl/
 
+# Since DistDGL's launch.py doesn't catch installed packages, need to make & activate virtualenv.
 RUN pip install --upgrade pip
+RUN pip install virtualenv
+
 RUN pip install dgl -f https://data.dgl.ai/wheels/cu113/repo.html
 RUN pip install -r /requirements.txt
 RUN pip uninstall -y outdated
+
+RUN python -m venv .venv --system-site-packages
 
 # CMD ["/bin/bash", "partition_graph.sh"]
